@@ -1,0 +1,54 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.skyuma.myfragment.RunViewPagerFragment">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="运动"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:layout_weight="1"
+            android:id="@+id/textViewRun" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="配速"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:layout_weight="1"
+            android:id="@+id/textViewPace" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="地图"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:layout_weight="1"
+            android:id="@+id/textViewMap" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:layout_gravity="center"
+        android:src="@android:drawable/button_onoff_indicator_on"
+        android:id="@+id/imageView" />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:flipInterval = "30"
+        android:persistentDrawingCache="animation"/>
+
+</LinearLayout>
