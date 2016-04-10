@@ -4,9 +4,11 @@
     android:layout_height="wrap_content"
     tools:context="com.skyuma.myfragment.HomeFragment">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/button" />
+    <ListView
+        android:id="@+id/mobile_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+
+
 </LinearLayout>

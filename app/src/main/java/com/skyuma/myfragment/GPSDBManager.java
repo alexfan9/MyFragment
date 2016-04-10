@@ -40,15 +40,13 @@ public class GPSDBManager {
         gpsdbHelper.backup(db, activity);
         db.beginTransaction();
         try {
-            String strDate = Settings.System.DATE_FORMAT;
-            String strTime = Settings.System.TIME_12_24;
             long dateToken = System.currentTimeMillis();
+            String name = activity + dateToken;
             TimeZone tz = TimeZone.getDefault();
             String strTimeZone = tz.getDisplayName();
-            String StrTimeId = tz.getID();
 
             db.execSQL("INSERT INTO activities VALUES(null, ?, ?, ?)",
-                    new Object[]{activity, dateToken, strTimeZone});
+                    new Object[]{name, dateToken, strTimeZone});
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();

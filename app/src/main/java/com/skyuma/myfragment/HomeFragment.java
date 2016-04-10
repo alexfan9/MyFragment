@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.util.Iterator;
 import java.util.List;
@@ -69,8 +71,15 @@ public class HomeFragment extends Fragment {
         Iterator it = gpsActivities.iterator();
         while (it.hasNext()){
             GPSActivity activity = (GPSActivity) it.next();
-            System.out.println("name:" + activity.getName() + "time:" + activity.get_datetime() + "timezone:" + activity.get_timezone());
+            System.out.println("name:" + activity.getName() + "  time:" + activity.get_datetime() + "  timezone:" + activity.get_timezone());
         }
+
+        //ArrayAdapterItem adapter = new ArrayAdapterItem(this, R.layout.list_view_row_item, ObjectItemData);
+        String[] mobileArray = {"Android","IPhone","WindowsMobile","Blackberry","WebOS","Ubuntu","Windows7","Max OS X"};
+        ArrayAdapter adapter = new ArrayAdapter<String>(getActivity(), R.layout.activity_listview, mobileArray);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.mobile_list);
+        listView.setAdapter(adapter);
         return rootView;
     }
 }
