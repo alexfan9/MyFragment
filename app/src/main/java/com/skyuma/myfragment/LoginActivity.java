@@ -335,11 +335,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 // For testing i am stroing name, email as follow
                 // Use user real data
                 System.out.println("result:" + result );
-                /*session.createLoginSession("Android Hive", "anroidhive@gmail.com");
+                session = new SessionManager(getApplicationContext());
+                session.createLoginSession("Android Hive", "anroidhive@gmail.com");
                 // Staring MainActivity
                 Intent i = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(i);
-                finish();*/
+                finish();
                 return true;
             }
             /*for (String credential : DUMMY_CREDENTIALS) {

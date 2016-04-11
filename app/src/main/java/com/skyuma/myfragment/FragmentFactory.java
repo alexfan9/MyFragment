@@ -18,7 +18,7 @@ public class FragmentFactory {
                 //fragment = HomeFragment.newInstance("param1", "param2");
                 break;
             case R.id.rb_me:
-                fragment = RunFragment.newInstance("param1", "param2");
+                fragment = SettingsFragment.newInstance("param1", "param2");
                 break;
         }
         return fragment;

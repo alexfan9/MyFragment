@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.provider.Settings;
 
 import java.util.ArrayList;
@@ -86,15 +87,20 @@ public class GPSDBManager {
 
     public List<GPSActivity> getActivities() {
         List<GPSActivity> gpsActivities = new ArrayList<GPSActivity>();
-        Cursor c = db.rawQuery("SELECT * FROM activities", null);
-        while (c.moveToNext()) {
-            GPSActivity gpsActivity = new GPSActivity();
-            gpsActivity.setName(c.getString(c.getColumnIndex("_activity")));
-            gpsActivity.set_datetime(c.getLong(c.getColumnIndex("_datetime")));
-            gpsActivity.set_timezone(c.getString(c.getColumnIndex("_atimezone")));
-            gpsActivities.add(gpsActivity);
+        try {
+            Cursor c = db.rawQuery("SELECT * FROM activities", null);
+            while (c.moveToNext()) {
+                GPSActivity gpsActivity = new GPSActivity();
+                gpsActivity.setName(c.getString(c.getColumnIndex("_activity")));
+                gpsActivity.set_datetime(c.getLong(c.getColumnIndex("_datetime")));
+                gpsActivity.set_timezone(c.getString(c.getColumnIndex("_atimezone")));
+                gpsActivities.add(gpsActivity);
+            }
+            c.close();
+        }catch (SQLiteException exception){
+
         }
-        c.close();
+        
         return gpsActivities;
     }
 
