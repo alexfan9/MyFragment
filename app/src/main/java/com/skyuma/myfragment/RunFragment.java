@@ -104,8 +104,7 @@ public class RunFragment extends Fragment {
                 gpsdbManager.add(gpsLocation);
             }
             List<GPSLocation> locations = gpsdbManager.query();
-            System.out.println("Latitude:" + location.getLatitude() + "Longitude:" + location.getLongitude() + "count:" + locations.size());
-        }
+            }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -203,7 +202,7 @@ public class RunFragment extends Fragment {
                         public void onClick(DialogInterface dialog, int which) {
                             if (checkGpsPermission() == true) {
                                 locationManager.removeUpdates(locationListener);
-                                gpsdbManager.createActivity("activity1");
+                                gpsdbManager.createActivity("activity");
                             }
                         }
                     })

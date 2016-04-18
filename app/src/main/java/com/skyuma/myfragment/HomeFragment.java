@@ -1,5 +1,6 @@
 package com.skyuma.myfragment;
 
+import android.content.res.Resources;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -67,18 +69,10 @@ public class HomeFragment extends Fragment {
 
         View rootView =  inflater.inflate(R.layout.fragment_home, container, false);
         GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
-        List<GPSActivity> gpsActivities = gpsdbManager.getActivities();
-        Iterator it = gpsActivities.iterator();
-        while (it.hasNext()){
-            GPSActivity activity = (GPSActivity) it.next();
-            System.out.println("name:" + activity.getName() + "  time:" + activity.get_datetime() + "  timezone:" + activity.get_timezone());
-        }
-
-        //ArrayAdapterItem adapter = new ArrayAdapterItem(this, R.layout.list_view_row_item, ObjectItemData);
-        String[] mobileArray = {"Android","IPhone","WindowsMobile","Blackberry","WebOS","Ubuntu","Windows7","Max OS X"};
-        ArrayAdapter adapter = new ArrayAdapter<String>(getActivity(), R.layout.activity_listview, mobileArray);
+        ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
 
         ListView listView = (ListView) rootView.findViewById(R.id.mobile_list);
+        ActivityAdapter adapter = new ActivityAdapter(getActivity(), gpsActivities);
         listView.setAdapter(adapter);
         return rootView;
     }

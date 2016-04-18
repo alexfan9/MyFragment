@@ -30,6 +30,8 @@ public class GPSDBManager {
     public void add(GPSLocation gpsLocation) {
         db.beginTransaction();	//开始事务
         try {
+            GPSLocation location = gpsLocation;
+            System.out.println("Latitude:" + location.getLantitude() + "Longitude:" + location.getLongitude());
             db.execSQL("INSERT INTO location VALUES(null, ?, ?, ?, ?, ?)",
                     new Object[]{gpsLocation.getLantitude(),gpsLocation.getLongitude(),gpsLocation.getAltitude(),gpsLocation.getSpeed(),gpsLocation.getTime()});
             db.setTransactionSuccessful();	//设置事务成功完成
@@ -38,7 +40,6 @@ public class GPSDBManager {
         }
     }
     public void createActivity(String activity){
-        gpsdbHelper.backup(db, activity);
         db.beginTransaction();
         try {
             long dateToken = System.currentTimeMillis();
@@ -48,6 +49,7 @@ public class GPSDBManager {
 
             db.execSQL("INSERT INTO activities VALUES(null, ?, ?, ?)",
                     new Object[]{name, dateToken, strTimeZone});
+            //gpsdbHelper.backup(db, name);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
@@ -85,8 +87,8 @@ public class GPSDBManager {
         return locations;
     }
 
-    public List<GPSActivity> getActivities() {
-        List<GPSActivity> gpsActivities = new ArrayList<GPSActivity>();
+    public ArrayList<GPSActivity> getActivities() {
+        ArrayList<GPSActivity> gpsActivities = new ArrayList<GPSActivity>();
         try {
             Cursor c = db.rawQuery("SELECT * FROM activities", null);
             while (c.moveToNext()) {
