@@ -1,26 +1,26 @@
 package com.skyuma.myfragment;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Window;
+import android.view.View;
 import android.widget.RadioGroup;
 
-public class MainActivity extends AppCompatActivity {
+import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.MapView;
 
+public class MainActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
     private SessionManager session;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
-
 
         fragmentManager = getSupportFragmentManager();
         RadioGroup radioGroup = (RadioGroup) findViewById(R.id.rg_tab);
@@ -47,5 +47,14 @@ public class MainActivity extends AppCompatActivity {
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
         }*/
+
+
+        findViewById(R.id.btnOpenBaiduMap).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, BaiduMapActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }

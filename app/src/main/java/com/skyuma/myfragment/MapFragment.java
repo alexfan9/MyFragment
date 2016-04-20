@@ -8,6 +8,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.MapStatusUpdate;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.map.MapView;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -21,6 +28,10 @@ public class MapFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    private MapView mMapView = null;
+    private BaiduMap baiduMap;
+    private LocationClient locationClient;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -61,7 +72,43 @@ public class MapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map, container, false);
+
+        View rootView = inflater.inflate(R.layout.fragment_map, container, false);
+        mMapView = (MapView) getActivity().findViewById(R.id.idMapView);
+        baiduMap = mMapView.getMap();
+        MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.zoomTo(15.0f);
+        baiduMap.setMapStatus(mapStatusUpdate);
+        locationClient = new LocationClient(getActivity());
+        LocationClientOption locationClientOption = new LocationClientOption();
+        locationClientOption.setOpenGps(true);
+        locationClientOption.setCoorType("bd09ll");
+        locationClientOption.setScanSpan(1000);
+        return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mMapView != null) {
+            mMapView.onResume();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mMapView != null) {
+            mMapView.onPause();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if(mMapView != null) {
+            mMapView.onDestroy();
+            mMapView = null;
+        }
+        super.onDestroy();
     }
 
 }
