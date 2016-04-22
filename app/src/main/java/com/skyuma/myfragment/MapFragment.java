@@ -10,10 +10,12 @@ import android.view.ViewGroup;
 
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.SupportMapFragment;
 
 
 /**
@@ -72,17 +74,19 @@ public class MapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
+        SDKInitializer.initialize(getActivity().getApplicationContext());
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
         mMapView = (MapView) getActivity().findViewById(R.id.idMapView);
-        baiduMap = mMapView.getMap();
-        MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.zoomTo(15.0f);
+        if (mMapView != null) {
+            baiduMap = mMapView.getMap();
+        }
+        /*MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.zoomTo(15.0f);
         baiduMap.setMapStatus(mapStatusUpdate);
         locationClient = new LocationClient(getActivity());
         LocationClientOption locationClientOption = new LocationClientOption();
         locationClientOption.setOpenGps(true);
         locationClientOption.setCoorType("bd09ll");
-        locationClientOption.setScanSpan(1000);
+        locationClientOption.setScanSpan(1000);*/
         return rootView;
     }
 

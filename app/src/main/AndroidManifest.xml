@@ -44,6 +44,53 @@
             android:label="@string/title_activity_baidu_map"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
+
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote" >
+            <intent-filter>
+                <action android:name="com.baidu.location.service_v2.2" >
+                </action>
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".BaseMapDemo"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/demo_name_basemap"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".MapFragmentDemo"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/demo_name_map_fragment"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".MultiMapViewDemo"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/demo_name_multimap"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".MapControlDemo"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/demo_name_control"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".UISettingDemo"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/demo_name_ui"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".LayersDemo"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/demo_name_layers"
+            android:screenOrientation="portrait" >
+        </activity>
     </application>
 
 </manifest>
