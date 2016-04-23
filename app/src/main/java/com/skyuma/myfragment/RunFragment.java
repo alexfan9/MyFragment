@@ -14,15 +14,19 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Chronometer;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +39,10 @@ import java.util.List;
  */
 public class RunFragment extends Fragment {
     GPSDBManager gpsdbManager;
+    TextView textView, textViewStatus;
+    private Chronometer timer;
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
+
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -57,7 +65,6 @@ public class RunFragment extends Fragment {
     private final GpsStatus.Listener statusLisener = new GpsStatus.Listener() {
         @Override
         public void onGpsStatusChanged(int event) {
-            System.out.println("onGpsStatusChanged enter");
             if (locationManager != null){
                 int count = 0;
                 GpsStatus status = locationManager.getGpsStatus(null);
@@ -74,15 +81,22 @@ public class RunFragment extends Fragment {
                         count++;
                     }
                     mSatelliteNum = numSatelliteList.size();
-                    System.out.println("Satellite number :" + mSatelliteNum);
+                    if (textView != null){
+                        textView.setText("Satellite number :" + mSatelliteNum + "  count:" + count);
+                    }
                 }else if (event == GpsStatus.GPS_EVENT_STARTED){
                     is_running = true;
                     imageButtonStart.setImageResource(R.drawable.stop_selector);
-                    System.out.println("GPS start");
+                    textView.setText("GPS Start");
+                    timer.setBase(SystemClock.elapsedRealtime());
+                    timer.start();
+
                 }else if (event == GpsStatus.GPS_EVENT_STOPPED){
                     is_running = false;
                     imageButtonStart.setImageResource(R.drawable.start_selector);
-                    System.out.println("GPS stop");
+                    textView.setText("GPS Stop");
+                    timer.setBase(SystemClock.elapsedRealtime());
+                    timer.stop();
                 }
             }
         }
@@ -104,7 +118,25 @@ public class RunFragment extends Fragment {
                 gpsdbManager.add(gpsLocation);
             }
             List<GPSLocation> locations = gpsdbManager.query();
+            String latLongString;
+
+            if (location != null) {
+                double lat = location.getLatitude();
+                double lng = location.getLongitude();
+                float spe = location.getSpeed();// 速度
+                float acc = location.getAccuracy();// 精度
+                double alt = location.getAltitude();// 海拔
+                float bea = location.getBearing();// 轴承
+                long tim = location.getTime();// 返回UTC时间1970年1月1毫秒
+                latLongString = "纬度:" + lat + "\n经度:" + lng + "\n精度：" + acc
+                        + "\n速度：" + spe + "\n海拔：" + alt + "\n轴承：" + bea + "\n时间："
+                        + sdf.format(tim);
+            } else {
+                latLongString = "无法获取位置信息";
             }
+            textViewStatus.setText("您当前的位置是:\n" + latLongString);
+
+        }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -158,6 +190,11 @@ public class RunFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_run, container, false);
+        textView = (TextView) rootView.findViewById(R.id.textViewGPS);
+        textViewStatus = (TextView) rootView.findViewById(R.id.textViewStatus);
+
+        timer = (Chronometer)rootView.findViewById(R.id.chronometer);
+        timer.setBase(SystemClock.elapsedRealtime());
         numSatelliteList = new ArrayList<GpsSatellite>();
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         if (locationManager == null) {

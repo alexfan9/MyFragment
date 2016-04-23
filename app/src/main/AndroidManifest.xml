@@ -24,9 +24,16 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
+        <!-- Windows <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="BYGSGTOgSHq1F0OrDi8BLt5P" />-->
+
+        <!--MAC-->
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="BYGSGTOgSHq1F0OrDi8BLt5P" />
+            android:value="nBuccW9KqKydtIcRtfOGOAEWb47Vz6V1" />
+
+
 
         <activity android:name=".MainActivity" >
             <intent-filter>
@@ -89,6 +96,24 @@
             android:name=".LayersDemo"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/demo_name_layers"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".OverlayDemo"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/demo_name_overlay"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".GeometryDemo"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/demo_name_geometry"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".LocationDemo"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/demo_name_location"
             android:screenOrientation="portrait" >
         </activity>
     </application>

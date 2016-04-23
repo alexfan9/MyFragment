@@ -1,0 +1,27 @@
+sais-iMac:MyFragment alex$ keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+Alias name: androiddebugkey
+Creation date: May 13, 2015
+Entry type: PrivateKeyEntry
+Certificate chain length: 1
+Certificate[1]:
+Owner: CN=Android Debug, O=Android, C=US
+Issuer: CN=Android Debug, O=Android, C=US
+Serial number: 123871ee
+Valid from: Wed May 13 22:18:44 CST 2015 until: Fri May 05 22:18:44 CST 2045
+Certificate fingerprints:
+         MD5:  CF:10:34:69:9A:50:D7:10:F1:78:95:69:55:D6:E5:26
+         SHA1: 26:C2:AF:6D:55:E4:06:89:CC:80:F2:21:A7:F0:A9:7A:EA:7D:DA:7C
+         SHA256: 86:15:3D:C0:3E:42:44:1C:F3:05:F3:10:2D:71:9C:63:D0:84:3F:D2:88:17:02:C0:58:17:0E:EB:BE:A2:32:4D
+         Signature algorithm name: SHA256withRSA
+         Version: 3
+
+Extensions:
+
+#1: ObjectId: 2.5.29.14 Criticality=false
+SubjectKeyIdentifier [
+KeyIdentifier [
+0000: AD 54 11 89 AA FF 14 3E   90 E6 16 75 4B 70 BF D2  .T.....>...uKp..
+0010: 16 99 E2 1D                                        ....
+]
+]
+
