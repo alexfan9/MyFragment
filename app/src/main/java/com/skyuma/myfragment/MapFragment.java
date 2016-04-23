@@ -1,6 +1,10 @@
 package com.skyuma.myfragment;
 
 import android.app.Activity;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -18,14 +22,23 @@ import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.DotOptions;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.map.Overlay;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.PolylineOptions;
+import com.baidu.mapapi.map.Projection;
 import com.baidu.mapapi.map.SupportMapFragment;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.model.inner.Point;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -56,6 +69,9 @@ public class MapFragment extends Fragment {
     RadioGroup.OnCheckedChangeListener radioButtonListener;
     Button requestLocButton;
     boolean isFirstLoc = true; // 是否首次定位
+    List<LatLng> points = new ArrayList<LatLng>();
+    List<LatLng> points_tem = new ArrayList<LatLng>();
+    OverlayOptions options;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -179,28 +195,86 @@ public class MapFragment extends Fragment {
 
         @Override
         public void onReceiveLocation(BDLocation location) {
-            // map view 销毁后不在处理新接收的位置
-            if (location == null || mMapView == null) {
+            if (location == null || mMapView == null)
                 return;
-            }
-            MyLocationData locData = new MyLocationData.Builder()
-                    .accuracy(location.getRadius())
-                            // 此处设置开发者获取到的方向信息，顺时针0-360
-                    .direction(100).latitude(location.getLatitude())
+            // 如果不显示定位精度圈，将accuracy赋值为0即可
+            MyLocationData locData = new MyLocationData.Builder().accuracy(0)
+                    .latitude(location.getLatitude())
                     .longitude(location.getLongitude()).build();
             mBaiduMap.setMyLocationData(locData);
+            LatLng point = new LatLng(location.getLatitude(),
+                    location.getLongitude());
+
+            points.add(point);
             if (isFirstLoc) {
+                points.add(point);
                 isFirstLoc = false;
                 LatLng ll = new LatLng(location.getLatitude(),
                         location.getLongitude());
-                MapStatus.Builder builder = new MapStatus.Builder();
-                builder.target(ll).zoom(18.0f);
-                mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+                MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
+                mBaiduMap.animateMapStatus(u);
+            }
+
+            if (points.size() == 5) {
+
+                // 这里绘制起点
+                drawStart(points);
+            } else if (points.size() > 7) {
+                points_tem = points.subList(points.size() - 4, points.size());
+                options = new PolylineOptions().color(0xAAFF0000).width(6)
+                        .points(points_tem);
+                mBaiduMap.addOverlay(options);
             }
         }
 
+
         public void onReceivePoi(BDLocation poiLocation) {
         }
+    }
+
+    /**
+     * 绘制起点，取前n个点坐标的平均值绘制起点
+     *
+     * @param points2
+     */
+    public void drawStart(List<LatLng> points2) {
+        double myLat = 0.0;
+        double myLng = 0.0;
+
+        for (LatLng ll : points2) {
+            myLat += ll.latitude;
+            myLng += ll.longitude;
+        }
+        LatLng avePoint = new LatLng(myLat / points2.size(), myLng
+                / points2.size());
+        points.add(avePoint);
+        options = new DotOptions().center(avePoint).color(0xAA00ff00)
+                .radius(15);
+        mBaiduMap.addOverlay(options);
+
+    }
+
+    /**
+     * 绘制终点。
+     *
+     * @param points2
+     */
+    protected void drawEnd(List<LatLng> points2) {
+        double myLat = 0.0;
+        double myLng = 0.0;
+        if (points2.size() > 5) {// points肯定大于5，其实不用判断
+            for (int i = points2.size() - 5; i < points2.size(); i++) {
+                LatLng ll = points2.get(i);
+                myLat += ll.latitude;
+                myLng += ll.longitude;
+
+            }
+            LatLng avePoint = new LatLng(myLat / 5, myLng / 5);
+            options = new DotOptions().center(avePoint).color(0xAAff00ff)
+                    .radius(15);
+            mBaiduMap.addOverlay(options);
+        }
+
     }
     @Override
     public void onResume() {
