@@ -49,7 +49,7 @@ public class GPSDBManager {
 
             db.execSQL("INSERT INTO activities VALUES(null, ?, ?, ?)",
                     new Object[]{name, dateToken, strTimeZone});
-            //gpsdbHelper.backup(db, name);
+            gpsdbHelper.backup(db, name);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();

@@ -51,7 +51,11 @@
             android:label="@string/title_activity_baidu_map"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
-
+        <activity
+            android:name=".DetailMapActivity"
+            android:label="@string/title_activity_detail_map"
+            android:screenOrientation="portrait" >
+        </activity>
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"

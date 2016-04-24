@@ -19,6 +19,7 @@
         completions."
     </string>
     <string name="title_activity_baidu_map">BaiduMapActivity</string>
+    <string name="title_activity_detail_map">Detail Activity</string>
 
 
     <string name="app_name2">百度地图SDK DEMO</string>
