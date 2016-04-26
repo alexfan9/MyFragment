@@ -95,11 +95,28 @@ public class HomeFragment extends Fragment {
         //final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
 
         listView = (ListView) rootView.findViewById(R.id.mobile_list);
+        Button btnUpload = (Button) rootView.findViewById(R.id.btnUpload);
         mProgressView = rootView.findViewById(R.id.home_progress);
-
-        showProgress(true);
-        MyTask mAuthTask = new MyTask();
-        mAuthTask.execute((Void) null);
+        btnUpload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showProgress(true);
+                MyUpLoadTask myUpLoadTask = new MyUpLoadTask();
+                myUpLoadTask.execute((Void) null);
+            }
+        });
+        Button btnDownload = (Button) rootView.findViewById(R.id.btnDownload);
+        btnDownload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showProgress(true);
+                MyDownloadTask myDownloadTask = new MyDownloadTask();
+                myDownloadTask.execute((Void) null);
+            }
+        });
+        /*showProgress(true);
+        MyDownloadTask mAuthTask = new MyDownloadTask();
+        mAuthTask.execute((Void) null);*/
         /*ActivityAdapter adapter = new ActivityAdapter(getActivity(), gpsActivities);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -136,7 +153,97 @@ public class HomeFragment extends Fragment {
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
         }
     }
-    public class MyTask extends AsyncTask <Void, Void, String>{
+    public class MyUpLoadTask extends AsyncTask <Void, Void, String>{
+
+        @Override
+        protected String doInBackground(Void... params) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            String result = "ok";
+            GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
+            ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
+            if (gpsActivities != null && gpsActivities.size() > 0) {
+                GPSActivity gpsActivity = gpsActivities.get(0);
+                JSONArray jsonArray = gpsdbManager.getActivityContent(gpsActivity.getName());
+                result = doUpLoad(gpsActivity.getName(),
+                        gpsActivity.get_datetime(),
+                        "China",
+                        jsonArray.toString());
+            }else{
+                result = "There is not any activity to upload";
+            }
+            System.out.println("MyUpLoadTask doInBackground result:" + result);
+            return result;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            showProgress(false);
+            Toast.makeText(getActivity(), "Upload successfully " + s, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String doUpLoad(String name, long date, String zone, String content){
+        String result = "OK";
+        StringBuffer stringBuffer = new StringBuffer();
+        try {
+            // Simulate network access.
+            Thread.sleep(2000);
+            String strurl = "http://115.159.188.64:8080/activity/upload_activity";
+            stringBuffer.append("name").append("=").append(name)
+                    .append("&")
+                    .append("a_date").append("=").append(date)
+                    .append("&")
+                    .append("a_zone").append("=").append(zone)
+                    .append("&")
+                    .append("content").append("=").append(URLEncoder.encode(content, "utf-8"));
+
+            byte[] data = stringBuffer.toString().getBytes();
+            URL url = new URL(strurl);
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            httpURLConnection.setConnectTimeout(3000);
+            httpURLConnection.setDoInput(true);
+            httpURLConnection.setDoOutput(true);
+            httpURLConnection.setRequestMethod("POST");
+            httpURLConnection.setUseCaches(false);
+            httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            httpURLConnection.setRequestProperty("Content-Length", String.valueOf(data.length));
+
+            OutputStream outputStream = httpURLConnection.getOutputStream();
+            outputStream.write(data);
+
+            int response = httpURLConnection.getResponseCode();
+            if (response == httpURLConnection.HTTP_OK){
+                InputStream inputStream = httpURLConnection.getInputStream();
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                byte[] value = new byte[1024];
+                int len = 0;
+                try{
+                    while((len = inputStream.read(value)) != -1){
+                        byteArrayOutputStream.write(value, 0, len);
+                    }
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+                result = new String(byteArrayOutputStream.toByteArray());
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+    public class MyDownloadTask extends AsyncTask <Void, Void, String>{
 
         @Override
         protected String doInBackground(Void... params) {

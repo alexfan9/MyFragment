@@ -7,6 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.provider.Settings;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -103,6 +107,42 @@ public class GPSDBManager {
 
         }
         return gpsActivities;
+    }
+
+    public JSONArray getActivityContent(String s) {
+        JSONArray jsonArray = new JSONArray();
+        ArrayList<GPSLocation> locations = new ArrayList<GPSLocation>();
+        String sql = "SELECT * FROM " + s ;
+        Cursor c = db.rawQuery(sql, null);
+        while (c.moveToNext()) {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("latitude", c.getDouble(c.getColumnIndex("_lantitude")));
+                jsonObject.put("longitude", c.getDouble(c.getColumnIndex("_longitude")));
+                jsonObject.put("altitude", c.getDouble(c.getColumnIndex("_altitude")));
+                jsonObject.put("speed", c.getFloat(c.getColumnIndex("_speed")));
+                jsonObject.put("date", c.getLong(c.getColumnIndex("_time")));
+                jsonArray.put(jsonObject);
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
+        }
+        if (jsonArray.length() == 0){
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("latitude", 65.9667);
+                jsonObject.put("longitude", -18.5333);
+                jsonObject.put("altitude", 15.0444);
+                jsonObject.put("speed", 3.0);
+                long date = 1461561073;
+                jsonObject.put("date", date);
+                jsonArray.put(jsonObject);
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
+        }
+        c.close();
+        return jsonArray;
     }
     /**
      * close database
