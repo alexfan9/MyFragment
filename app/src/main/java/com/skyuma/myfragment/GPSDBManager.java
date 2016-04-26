@@ -32,8 +32,8 @@ public class GPSDBManager {
         try {
             GPSLocation location = gpsLocation;
             System.out.println("Latitude:" + location.getLantitude() + "Longitude:" + location.getLongitude());
-            db.execSQL("INSERT INTO location VALUES(null, ?, ?, ?, ?, ?)",
-                    new Object[]{gpsLocation.getLantitude(),gpsLocation.getLongitude(),gpsLocation.getAltitude(),gpsLocation.getSpeed(),gpsLocation.getTime()});
+            db.execSQL("INSERT INTO activity VALUES(null, ?, ?, ?, ?, ?)",
+                    new Object[]{gpsLocation.getLantitude(), gpsLocation.getLongitude(), gpsLocation.getAltitude(), gpsLocation.getSpeed(), gpsLocation.getTime()});
             db.setTransactionSuccessful();	//设置事务成功完成
         } finally {
             db.endTransaction();	//结束事务
@@ -47,7 +47,7 @@ public class GPSDBManager {
             TimeZone tz = TimeZone.getDefault();
             String strTimeZone = tz.getDisplayName();
 
-            db.execSQL("INSERT INTO activities VALUES(null, ?, ?, ?)",
+            db.execSQL("INSERT INTO activity_list VALUES(null, ?, ?, ?)",
                     new Object[]{name, dateToken, strTimeZone});
             gpsdbHelper.backup(db, name);
             db.setTransactionSuccessful();
@@ -58,7 +58,7 @@ public class GPSDBManager {
     public void clear(){
         db.beginTransaction();	//开始事务
         try {
-            String table = "location";
+            String table = "activity";
             db.execSQL("DELETE FROM " + table);
             db.execSQL("UPDATE SQLITE_SEQUENCE SET SEQ = 0 WHERE NAME = ' " + table + "'");
             db.setTransactionSuccessful();
@@ -73,7 +73,7 @@ public class GPSDBManager {
      */
     public List<GPSLocation> query() {
         ArrayList<GPSLocation> locations = new ArrayList<GPSLocation>();
-        Cursor c = queryTheCursor();
+        Cursor c = db.rawQuery("SELECT * FROM activity", null);
         while (c.moveToNext()) {
             GPSLocation location = new GPSLocation();
             location.setLantitude(c.getDouble(c.getColumnIndex("_lantitude")));
@@ -90,7 +90,7 @@ public class GPSDBManager {
     public ArrayList<GPSActivity> getActivities() {
         ArrayList<GPSActivity> gpsActivities = new ArrayList<GPSActivity>();
         try {
-            Cursor c = db.rawQuery("SELECT * FROM activities", null);
+            Cursor c = db.rawQuery("SELECT * FROM activity_list", null);
             while (c.moveToNext()) {
                 GPSActivity gpsActivity = new GPSActivity();
                 gpsActivity.setName(c.getString(c.getColumnIndex("_activity")));
@@ -102,19 +102,8 @@ public class GPSDBManager {
         }catch (SQLiteException exception){
 
         }
-        
         return gpsActivities;
     }
-
-    /**
-     * query all persons, return cursor
-     * @return	Cursor
-     */
-    public Cursor queryTheCursor() {
-        Cursor c = db.rawQuery("SELECT * FROM location", null);
-        return c;
-    }
-
     /**
      * close database
      */

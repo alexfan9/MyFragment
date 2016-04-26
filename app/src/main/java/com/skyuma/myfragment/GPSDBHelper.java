@@ -17,9 +17,9 @@ public class GPSDBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         System.out.println("createing database");
-        db.execSQL("CREATE TABLE IF NOT EXISTS location" +
+        db.execSQL("CREATE TABLE IF NOT EXISTS activity" +
                 "(_id INTEGER PRIMARY KEY AUTOINCREMENT, _lantitude REAL, _longitude REAL, _altitude REAL,_speed REAL,_time INTEGER)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS activities" +
+        db.execSQL("CREATE TABLE IF NOT EXISTS activity_list" +
                 "(_id INTEGER PRIMARY KEY AUTOINCREMENT, _activity TEXT, _datetime INTEGER, _atimezone TEXT)");
         System.out.println("database created");
     }
@@ -34,6 +34,6 @@ public class GPSDBHelper extends SQLiteOpenHelper {
                 " (_id INTEGER PRIMARY KEY AUTOINCREMENT, _lantitude REAL, _longitude REAL, _altitude REAL,_speed REAL,_time INTEGER)");
 
         db.execSQL("insert into " + tableName +
-                " select * from location");
+                " select * from activity");
     }
 }

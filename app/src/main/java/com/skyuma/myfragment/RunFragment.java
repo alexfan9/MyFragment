@@ -26,6 +26,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,6 +46,7 @@ public class RunFragment extends Fragment {
     TextView textView, textViewStatus;
     private Chronometer timer;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
+    JSONArray jsonArray2 = new JSONArray();
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -118,8 +123,42 @@ public class RunFragment extends Fragment {
                 gpsdbManager.add(gpsLocation);
             }
             List<GPSLocation> locations = gpsdbManager.query();
-            String latLongString;
 
+           /* System.out.println("jsonArray2 output start");
+            try {
+                JSONObject jsonObject2 = new JSONObject();
+                jsonObject2.put("latitude", location.getLatitude());
+                jsonObject2.put("longitude", location.getLongitude());
+                System.out.println(jsonObject2.toString());
+                jsonArray2.put(jsonObject2);
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
+            System.out.println(jsonArray2.toString());
+            System.out.println("jsonArray2 output end");*/
+
+            JSONArray jsonArray = new JSONArray();
+            Iterator it1 = locations.iterator();
+            while (it1.hasNext()){
+                JSONObject jsonObject = new JSONObject();
+                GPSLocation location2 = (GPSLocation) it1.next();
+                try {
+                    jsonObject.put("latitude", location2.getLantitude());
+                    jsonObject.put("longitude", location2.getLongitude());
+                    jsonObject.put("altitude", location2.getAltitude());
+                    jsonObject.put("speed", location2.getSpeed());
+                    jsonObject.put("date", location2.getTime());
+                    jsonArray.put(jsonObject);
+                } catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("jsonArray output start");
+            System.out.println(jsonArray.toString());
+            System.out.println("jsonArray output end");
+
+
+            String latLongString;
             if (location != null) {
                 double lat = location.getLatitude();
                 double lng = location.getLongitude();
@@ -135,7 +174,6 @@ public class RunFragment extends Fragment {
                 latLongString = "无法获取位置信息";
             }
             textViewStatus.setText("您当前的位置是:\n" + latLongString);
-
         }
 
         @Override

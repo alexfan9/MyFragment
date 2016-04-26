@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 /**
@@ -61,7 +62,9 @@ public class ActivityAdapter extends BaseAdapter implements View.OnClickListener
             GPSActivity gpsActivity = activityArrayList.get(position);
             txtTitle.setText(gpsActivity.getName());
             imageView.setImageResource(R.drawable.rain);
-            extratxt.setText("Description " + gpsActivity.getName());
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
+            String strDate =  simpleDateFormat.format(gpsActivity.get_datetime());
+            extratxt.setText(strDate + " "  + gpsActivity.get_timezone());
         }
         return rootView;
 
