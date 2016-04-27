@@ -6,10 +6,9 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.BaiduMapOptions;
-import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapView;
-import com.baidu.mapapi.model.LatLng;
+
+import org.json.JSONArray;
 
 import java.text.SimpleDateFormat;
 
@@ -36,6 +35,8 @@ public class DetailMapActivity extends Activity{
         TextView textView = (TextView) findViewById(R.id.txtDetailTitle);
         textView.setText(simpleDateFormat.format(b.getLong("datetime")) + timezone);
 
+        GPSDBManager gpsdbManager = new GPSDBManager(this);
+        JSONArray jsonArray = gpsdbManager.getActivityContent(strName);
     }
     @Override
     protected void onPause() {

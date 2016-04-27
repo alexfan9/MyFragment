@@ -1,7 +1,9 @@
 package com.skyuma.myfragment;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -57,8 +58,9 @@ public class SettingsFragment extends Fragment {
 
         mAdapter.addSectionHeaderItem("");
 
-        mAdapter.addItem("Login out");
-        mAdapter.addItem("About");
+        mAdapter.addItem("退出登录");
+        mAdapter.addItem("清空数据");
+        mAdapter.addItem("关于");
 
         ListView listView = (ListView) rootView.findViewById(R.id.listView);
         listView.setAdapter(mAdapter);
@@ -77,6 +79,20 @@ public class SettingsFragment extends Fragment {
                     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(i);
                     getActivity().finish();
+                }else if (position == 2){
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle("Confirm")
+                            .setMessage("确定要清空数据吗?")
+                            .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
+                                    gpsdbManager.deleteActivityList();
+                                    Toast.makeText(getActivity(), "清空数据完成", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .setNegativeButton("No", null)
+                            .show();
                 }
             }
         });

@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.RadioGroup;
 
 import com.baidu.mapapi.SDKInitializer;
-import com.baidu.mapapi.map.MapView;
 
 public class MainActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;

@@ -1,22 +1,22 @@
 package com.skyuma.myfragment;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.provider.Settings;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
 
 public class GPSDBManager {
+    private static final String LTAG = GPSDBManager.class.getSimpleName();
     private GPSDBHelper gpsdbHelper;
     private SQLiteDatabase db;
 
@@ -55,6 +55,119 @@ public class GPSDBManager {
                     new Object[]{name, dateToken, strTimeZone});
             gpsdbHelper.backup(db, name);
             db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+    public void deleteActivity(String name){
+        db.beginTransaction();	//开始事务
+        try {
+            db.execSQL("drop table if exists " + name);
+            db.execSQL("DELETE FROM activity_list where _activity = '" + name + "'");
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void deleteActivityList(){
+        db.beginTransaction();	//开始事务
+        try {
+            Cursor c = db.rawQuery("SELECT * FROM activity_list", null);
+            while (c.moveToNext()) {
+                String name = c.getString(c.getColumnIndex("_activity"));
+                db.execSQL("drop table if exists " + name);
+            }
+            db.execSQL("DELETE FROM activity_list");
+            db.execSQL("UPDATE SQLITE_SEQUENCE SET SEQ = 0 WHERE NAME = 'activity_list'");
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void saveActivity(GPSActivity gpsActivity){
+        db.beginTransaction();
+        try {
+            db.execSQL("INSERT INTO activity_list VALUES(null, ?, ?, ?)",
+                    new Object[]{gpsActivity.getName(), gpsActivity.get_datetime(), gpsActivity.get_timezone()});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void saveActivityContent(String name, ArrayList<GPSLocation> gpsLocations){
+        db.beginTransaction();
+        try {
+            int count = 0;
+            String sql = String.format("select count(*) from sqlite_master where type='table' and name='%s'", name);
+            Cursor c = db.rawQuery(sql, null);
+            while (c.moveToNext()) {
+                count = c.getInt(0);
+                Log.d(LTAG, "saveActivityContent count : " + count);
+            }
+            c.close();
+            if (count > 0){
+                return;
+            }
+            db.execSQL("CREATE TABLE " + name +
+                    " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "_lantitude REAL, _longitude REAL, _altitude REAL," +
+                    "_speed REAL,_time INTEGER)");
+
+            Iterator iterator = gpsLocations.iterator();
+            while (iterator.hasNext()){
+                GPSLocation gpsLocation = (GPSLocation) iterator.next();
+                db.execSQL("INSERT INTO " + name +
+                                " VALUES(null, ?, ?, ?, ?, ?)",
+                        new Object[]{gpsLocation.getLantitude(),
+                                gpsLocation.getLongitude(),
+                                gpsLocation.getAltitude(),
+                                gpsLocation.getSpeed(),
+                                gpsLocation.getTime()});
+
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void saveActivityContent2(String name, String content){
+        db.beginTransaction();
+        try {
+            int count = 0;
+            String sql = String.format("select count(*) from sqlite_master where type='table' and name='%s'", name);
+            Cursor c = db.rawQuery(sql, null);
+            while (c.moveToNext()) {
+                count = c.getInt(0);
+                Log.d(LTAG, "saveActivityContent count : " + count);
+            }
+            c.close();
+            if (count > 0){
+                return;
+            }
+            db.execSQL("CREATE TABLE " + name +
+                    " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "_lantitude REAL, _longitude REAL, _altitude REAL," +
+                    "_speed REAL,_time INTEGER)");
+
+            JSONArray jsonArray = new JSONArray(content);
+            System.out.println(jsonArray.toString());
+            for (int i = 0; i < jsonArray.length(); i++){
+                JSONArray jsonArray1 = jsonArray.getJSONArray(i);
+                db.execSQL("INSERT INTO " + name +
+                                " VALUES(null, ?, ?, ?, ?, ?)",
+                        new Object[]{jsonArray1.getDouble(1),
+                                jsonArray1.getDouble(2),
+                                jsonArray1.getDouble(3),
+                                jsonArray1.getDouble(4),
+                                jsonArray1.getLong(5)});
+            }
+            db.setTransactionSuccessful();
+        } catch (JSONException e) {
+            e.printStackTrace();
         } finally {
             db.endTransaction();
         }
@@ -111,7 +224,6 @@ public class GPSDBManager {
 
     public JSONArray getActivityContent(String s) {
         JSONArray jsonArray = new JSONArray();
-        ArrayList<GPSLocation> locations = new ArrayList<GPSLocation>();
         String sql = "SELECT * FROM " + s ;
         Cursor c = db.rawQuery(sql, null);
         while (c.moveToNext()) {

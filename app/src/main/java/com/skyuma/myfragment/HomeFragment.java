@@ -3,23 +3,20 @@ package com.skyuma.myfragment;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,8 +27,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -44,6 +39,7 @@ import java.util.Map;
 public class HomeFragment extends Fragment {
     ListView listView;
     private View mProgressView;
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -90,9 +86,8 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
 
         View rootView =  inflater.inflate(R.layout.fragment_home, container, false);
-
-        //GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
-        //final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
+        GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
+        final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
 
         listView = (ListView) rootView.findViewById(R.id.mobile_list);
         Button btnUpload = (Button) rootView.findViewById(R.id.btnUpload);
@@ -114,10 +109,8 @@ public class HomeFragment extends Fragment {
                 myDownloadTask.execute((Void) null);
             }
         });
-        /*showProgress(true);
-        MyDownloadTask mAuthTask = new MyDownloadTask();
-        mAuthTask.execute((Void) null);*/
-        /*ActivityAdapter adapter = new ActivityAdapter(getActivity(), gpsActivities);
+
+        ActivityAdapter adapter = new ActivityAdapter(getActivity(), gpsActivities);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -129,7 +122,7 @@ public class HomeFragment extends Fragment {
                 intent.putExtra("timezone", gpsActivity.get_timezone());
                 getActivity().startActivity(intent);
             }
-        });*/
+        });
         return rootView;
     }
 
@@ -165,23 +158,22 @@ public class HomeFragment extends Fragment {
             String result = "ok";
             GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
             ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
-            if (gpsActivities != null && gpsActivities.size() > 0) {
-                GPSActivity gpsActivity = gpsActivities.get(0);
+            Iterator iterator = gpsActivities.iterator();
+            while (iterator.hasNext()){
+                GPSActivity gpsActivity = (GPSActivity) iterator.next();
                 JSONArray jsonArray = gpsdbManager.getActivityContent(gpsActivity.getName());
                 result = doUpLoad(gpsActivity.getName(),
                         gpsActivity.get_datetime(),
                         "China",
                         jsonArray.toString());
-            }else{
-                result = "There is not any activity to upload";
             }
-            System.out.println("MyUpLoadTask doInBackground result:" + result);
             return result;
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            showProgress(true);
         }
 
         @Override
@@ -298,6 +290,44 @@ public class HomeFragment extends Fragment {
             try {
                 JSONArray jsonArray = new JSONArray(s);
                 System.out.println(jsonArray.toString());
+                GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
+                for (int i = 0; i < jsonArray.length(); i++){
+                    JSONArray jsonArray1 = jsonArray.getJSONArray(i);
+                    GPSActivity gpsActivity = new GPSActivity();
+                    gpsActivity.setName(jsonArray1.getString(1));
+                    gpsActivity.set_datetime(jsonArray1.getLong(2));
+                    gpsActivity.set_timezone(jsonArray1.getString(3));
+                    String content = jsonArray1.getString(4);
+                    gpsdbManager.saveActivity(gpsActivity);
+                    gpsdbManager.saveActivityContent2(gpsActivity.getName(), content);
+                }
+                final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
+                ActivityAdapter adapter = new ActivityAdapter(getActivity(), gpsActivities);
+                listView.setAdapter(adapter);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        GPSActivity gpsActivity = gpsActivities.get(position);
+                        Intent intent = new Intent(getActivity(), DetailMapActivity.class);
+                        intent.putExtra("name", gpsActivity.getName());
+                        intent.putExtra("datetime", gpsActivity.get_datetime());
+                        intent.putExtra("timezone", gpsActivity.get_timezone());
+                        getActivity().startActivity(intent);
+                    }
+                });
+                adapter.notifyDataSetChanged();
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        protected void onPostExecute2(String s) {
+            super.onPostExecute(s);
+            showProgress(false);
+            try {
+                JSONArray jsonArray = new JSONArray(s);
+                System.out.println(jsonArray.toString());
                 final ArrayList<GPSActivity> gpsActivities = new ArrayList<>();
                 for (int i = 0; i < jsonArray.length(); i++){
                     JSONArray jsonArray1 = jsonArray.getJSONArray(i);
@@ -326,7 +356,6 @@ public class HomeFragment extends Fragment {
                 e.printStackTrace();
             }
         }
-
         @Override
         protected void onCancelled() {
             super.onCancelled();
