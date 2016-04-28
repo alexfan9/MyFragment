@@ -21,6 +21,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -170,6 +171,10 @@ public class RunFragment extends Fragment {
                 latLongString = "纬度:" + lat + "\n经度:" + lng + "\n精度：" + acc
                         + "\n速度：" + spe + "\n海拔：" + alt + "\n轴承：" + bea + "\n时间："
                         + sdf.format(tim);
+
+                MainActivity activity = (MainActivity) getActivity();
+                PaceFragment paceFragment = (PaceFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(1);
+                paceFragment.textView.setText(latLongString);
             } else {
                 latLongString = "无法获取位置信息";
             }
@@ -230,7 +235,15 @@ public class RunFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_run, container, false);
         textView = (TextView) rootView.findViewById(R.id.textViewGPS);
         textViewStatus = (TextView) rootView.findViewById(R.id.textViewStatus);
-
+        Button button = (Button) rootView.findViewById(R.id.btnPaceChange);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity activity = (MainActivity) getActivity();
+                PaceFragment paceFragment = (PaceFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(1);
+                paceFragment.textView.setText("latLongString");
+            }
+        });
         timer = (Chronometer)rootView.findViewById(R.id.chronometer);
         timer.setBase(SystemClock.elapsedRealtime());
         numSatelliteList = new ArrayList<GpsSatellite>();

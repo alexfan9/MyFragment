@@ -18,7 +18,12 @@ import java.util.ArrayList;
 public class RunViewPagerFragment extends Fragment  {
 
     private ViewPager pager;
-    private ArrayList<Fragment> fragmentList;
+
+    public ArrayList<Fragment> getFragmentList() {
+        return fragmentList;
+    }
+
+    public ArrayList<Fragment> fragmentList;
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 

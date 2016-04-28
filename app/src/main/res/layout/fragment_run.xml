@@ -5,6 +5,12 @@
     tools:context="com.skyuma.myfragment.RunFragment"
     android:orientation="vertical">
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnPaceChange"
+        android:text="Pace change"/>
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
