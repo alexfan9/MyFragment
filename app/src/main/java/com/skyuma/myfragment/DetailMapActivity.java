@@ -18,6 +18,7 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.Polyline;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.utils.CoordinateConverter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -65,10 +66,14 @@ public class DetailMapActivity extends Activity{
         List<LatLng> points = new ArrayList<LatLng>();
         LatLng start = null;
         LatLng end = null;
+        CoordinateConverter converter = new CoordinateConverter();
+        converter.from(CoordinateConverter.CoordType.GPS);
         for (int i = 0; i < jsonArray.length(); i++){
             try {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                LatLng point = new LatLng(jsonObject.getDouble("latitude"), jsonObject.getDouble("longitude"));
+                LatLng srcLatLng = new LatLng(jsonObject.getDouble("latitude"), jsonObject.getDouble("longitude"));
+                converter.coord(srcLatLng);
+                LatLng point = converter.convert();
                 points.add(point);
                 if (i == 0){
                     start = point;
