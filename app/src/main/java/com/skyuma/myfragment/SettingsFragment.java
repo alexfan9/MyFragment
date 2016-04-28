@@ -33,9 +33,6 @@ public class SettingsFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public interface OnSettingChangedListener{
-        public void OnSettingChanged();
-    }
 
     @Override
     public void onAttach(Context context) {

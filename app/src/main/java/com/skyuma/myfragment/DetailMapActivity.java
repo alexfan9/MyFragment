@@ -51,7 +51,7 @@ public class DetailMapActivity extends Activity{
         mMapView = (MapView) findViewById(R.id.detailMapView);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
         TextView textView = (TextView) findViewById(R.id.txtDetailTitle);
-        textView.setText(simpleDateFormat.format(b.getLong("datetime")) + timezone);
+        textView.setText(simpleDateFormat.format(b.getLong("datetime")) + " " + timezone);
 
         GPSDBManager gpsdbManager = new GPSDBManager(this);
         JSONArray jsonArray = gpsdbManager.getActivityContent(strName);

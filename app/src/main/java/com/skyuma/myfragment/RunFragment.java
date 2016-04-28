@@ -44,6 +44,7 @@ import java.util.List;
  */
 public class RunFragment extends Fragment {
     GPSDBManager gpsdbManager;
+    OnSettingChangedListener mCallback = null;
     TextView textView, textViewStatus;
     private Chronometer timer;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
@@ -91,18 +92,10 @@ public class RunFragment extends Fragment {
                         textView.setText("Satellite number :" + mSatelliteNum + "  count:" + count);
                     }
                 }else if (event == GpsStatus.GPS_EVENT_STARTED){
-                    is_running = true;
-                    imageButtonStart.setImageResource(R.drawable.stop_selector);
-                    textView.setText("GPS Start");
-                    timer.setBase(SystemClock.elapsedRealtime());
-                    timer.start();
+
 
                 }else if (event == GpsStatus.GPS_EVENT_STOPPED){
-                    is_running = false;
-                    imageButtonStart.setImageResource(R.drawable.start_selector);
-                    textView.setText("GPS Stop");
-                    timer.setBase(SystemClock.elapsedRealtime());
-                    timer.stop();
+
                 }
             }
         }
@@ -110,34 +103,16 @@ public class RunFragment extends Fragment {
     private LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            if (is_running == false){
-                is_running = true;
-            }
             GPSLocation gpsLocation = new GPSLocation();
             gpsLocation.setLantitude(location.getLatitude());
             gpsLocation.setLongitude(location.getLongitude());
             gpsLocation.setAltitude(location.getAltitude());
             gpsLocation.setTime(location.getTime());
             gpsLocation.setSpeed(location.getSpeed());
-            //locationList.add(gpsLocation);
             if (gpsdbManager != null){
                 gpsdbManager.add(gpsLocation);
             }
             List<GPSLocation> locations = gpsdbManager.query();
-
-           /* System.out.println("jsonArray2 output start");
-            try {
-                JSONObject jsonObject2 = new JSONObject();
-                jsonObject2.put("latitude", location.getLatitude());
-                jsonObject2.put("longitude", location.getLongitude());
-                System.out.println(jsonObject2.toString());
-                jsonArray2.put(jsonObject2);
-            }catch (JSONException e){
-                e.printStackTrace();
-            }
-            System.out.println(jsonArray2.toString());
-            System.out.println("jsonArray2 output end");*/
-
             JSONArray jsonArray = new JSONArray();
             Iterator it1 = locations.iterator();
             while (it1.hasNext()){
@@ -154,11 +129,6 @@ public class RunFragment extends Fragment {
                     e.printStackTrace();
                 }
             }
-            System.out.println("jsonArray output start");
-            System.out.println(jsonArray.toString());
-            System.out.println("jsonArray output end");
-
-
             String latLongString;
             if (location != null) {
                 double lat = location.getLatitude();
@@ -196,8 +166,6 @@ public class RunFragment extends Fragment {
 
         }
     };
-
-
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -218,6 +186,17 @@ public class RunFragment extends Fragment {
 
     public RunFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            mCallback = (OnSettingChangedListener) context;
+        }catch (ClassCastException e){
+            throw new ClassCastException(context.toString() +
+                    " must implemtn OnSettingChangedListener");
+        }
     }
 
     @Override
@@ -280,6 +259,23 @@ public class RunFragment extends Fragment {
         criteria.setPowerRequirement(Criteria.POWER_LOW);
     }
 
+    protected boolean checkGpsPermission(){
+        if (Build.VERSION.SDK_INT>=23 &&
+                ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (checkGpsPermission() == true) {
+            //locationManager.removeUpdates(locationListener);
+        }
+    }
+
     protected void stopRunning() {
         if (locationManager != null && locationListener != null) {
             new AlertDialog.Builder(getActivity())
@@ -290,7 +286,14 @@ public class RunFragment extends Fragment {
                         public void onClick(DialogInterface dialog, int which) {
                             if (checkGpsPermission() == true) {
                                 locationManager.removeUpdates(locationListener);
+                                is_running = false;
+                                imageButtonStart.setImageResource(R.drawable.start_selector);
+                                textView.setText("GPS Stop");
+                                timer.setBase(SystemClock.elapsedRealtime());
+                                timer.stop();
                                 gpsdbManager.createActivity("activity");
+                                mCallback.OnSettingChanged();
+
                             }
                         }
                     })
@@ -299,14 +302,6 @@ public class RunFragment extends Fragment {
         }
     }
 
-    protected boolean checkGpsPermission(){
-        if (Build.VERSION.SDK_INT>=23 &&
-                ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return false;
-        }
-        return true;
-    }
     protected void startRunning() {
         if (locationManager == null) {
             locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -324,7 +319,12 @@ public class RunFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (checkGpsPermission() == true) {
-                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
+                            is_running = true;
+                            imageButtonStart.setImageResource(R.drawable.stop_selector);
+                            textView.setText("GPS Start");
+                            timer.setBase(SystemClock.elapsedRealtime());
+                            timer.start();
                             if (gpsdbManager != null){
                                 gpsdbManager.clear();
                             }

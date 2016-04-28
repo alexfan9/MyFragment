@@ -11,7 +11,7 @@ import android.widget.RadioGroup;
 
 import com.baidu.mapapi.SDKInitializer;
 
-public class MainActivity extends AppCompatActivity implements SettingsFragment.OnSettingChangedListener{
+public class MainActivity extends AppCompatActivity implements OnSettingChangedListener{
     private SessionManager session;
     Fragment currentFragment = null;
     Fragment homeFragment = null;
