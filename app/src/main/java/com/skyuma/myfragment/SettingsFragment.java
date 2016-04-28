@@ -19,9 +19,8 @@ import android.widget.Toast;
  * A simple {@link Fragment} subclass.
  */
 public class SettingsFragment extends Fragment {
-
     private SettingsAdapter mAdapter;
-
+    OnSettingChangedListener mCallback = null;
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -32,6 +31,21 @@ public class SettingsFragment extends Fragment {
 
     public SettingsFragment() {
         // Required empty public constructor
+    }
+
+    public interface OnSettingChangedListener{
+        public void OnSettingChanged();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            mCallback = (OnSettingChangedListener) context;
+        }catch (ClassCastException e){
+            throw new ClassCastException(context.toString() +
+                    " must implemtn OnSettingChangedListener");
+        }
     }
 
     @Override
@@ -70,7 +84,7 @@ public class SettingsFragment extends Fragment {
                 String item = "You click postion:" + mAdapter.getItem(position) + "id:" + mAdapter.getItemId(position);
                 Toast.makeText(getActivity(), item, Toast.LENGTH_SHORT).show();
 
-                if (position == 1){
+                if (position == 1) {
                     Context context = getActivity();
                     SessionManager session = new SessionManager(context);
                     session.logoutUser();
@@ -79,7 +93,7 @@ public class SettingsFragment extends Fragment {
                     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(i);
                     getActivity().finish();
-                }else if (position == 2){
+                } else if (position == 2) {
                     new AlertDialog.Builder(getActivity())
                             .setTitle("Confirm")
                             .setMessage("确定要清空数据吗?")
@@ -88,6 +102,7 @@ public class SettingsFragment extends Fragment {
                                 public void onClick(DialogInterface dialog, int which) {
                                     GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
                                     gpsdbManager.deleteActivityList();
+                                    mCallback.OnSettingChanged();
                                     Toast.makeText(getActivity(), "清空数据完成", Toast.LENGTH_SHORT).show();
                                 }
                             })

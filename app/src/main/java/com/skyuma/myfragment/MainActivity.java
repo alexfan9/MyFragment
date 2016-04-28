@@ -11,9 +11,13 @@ import android.widget.RadioGroup;
 
 import com.baidu.mapapi.SDKInitializer;
 
-public class MainActivity extends AppCompatActivity {
-    private FragmentManager fragmentManager;
+public class MainActivity extends AppCompatActivity implements SettingsFragment.OnSettingChangedListener{
     private SessionManager session;
+    Fragment currentFragment = null;
+    Fragment homeFragment = null;
+    Fragment runViewFragment = null;
+    Fragment settingFragment = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,19 +25,30 @@ public class MainActivity extends AppCompatActivity {
         SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
 
-        fragmentManager = getSupportFragmentManager();
+        homeFragment = HomeFragment.newInstance("param1", "param2");
+        runViewFragment = RunViewPagerFragment.newInstance("param1", "param2");
+        settingFragment = SettingsFragment.newInstance("param1", "param2");
+        currentFragment = homeFragment;
+        addFragment(homeFragment);
         RadioGroup radioGroup = (RadioGroup) findViewById(R.id.rg_tab);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                Fragment fragment = FragmentFactory.getInstanceByIndex(checkedId, fragmentManager);
-                if (fragment != null) {
-                    fragmentTransaction.replace(R.id.content, fragment);
-                    fragmentTransaction.commit();
+                switch (checkedId){
+                    case R.id.rb_home:
+                        swtichFragment(currentFragment, homeFragment);
+                        break;
+                    case R.id.rb_start:
+                        swtichFragment(currentFragment, runViewFragment);
+                        break;
+                    case R.id.rb_me:
+                        swtichFragment(currentFragment, settingFragment);
+                        break;
                 }
             }
         });
+
+
         findViewById(R.id.rb_home).performClick();
 
         session = new SessionManager(getApplicationContext());
@@ -55,5 +70,33 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+    public void addFragment(Fragment fragment){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        if (!fragment.isAdded()){
+            fragmentTransaction.add(R.id.content, fragment).commit();
+        } else {
+            fragmentTransaction.show(fragment).commit();
+        }
+    }
+    public void swtichFragment(Fragment from, Fragment to){
+        if (currentFragment != to ){
+            currentFragment = to;
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            if (!to.isAdded()){
+                fragmentTransaction.hide(from).add(R.id.content, to).commit();
+            } else {
+                fragmentTransaction.hide(from).show(to).commit();
+            }
+        }
+    }
+
+    @Override
+    public void OnSettingChanged() {
+        if (homeFragment != null){
+            ((HomeFragment) homeFragment).updateAdapter();
+        }
     }
 }

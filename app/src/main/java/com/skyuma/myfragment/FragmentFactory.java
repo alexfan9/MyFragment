@@ -15,7 +15,7 @@ public class FragmentFactory {
                 break;
             case R.id.rb_start:
                 fragment = RunViewPagerFragment.newInstance("param1", "param2");
-                //fragment = HomeFragment.newInstance("param1", "param2");
+                //fragment = PaceFragment.newInstance("param1", "param2");
                 break;
             case R.id.rb_me:
                 fragment = SettingsFragment.newInstance("param1", "param2");

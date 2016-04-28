@@ -39,6 +39,8 @@ import java.util.Iterator;
 public class HomeFragment extends Fragment {
     ListView listView;
     private View mProgressView;
+    ActivityAdapter adapter = null;
+    GPSDBManager gpsdbManager = null;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -86,8 +88,8 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
 
         View rootView =  inflater.inflate(R.layout.fragment_home, container, false);
-        GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
-        final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
+        gpsdbManager = new GPSDBManager(getActivity());
+
 
         listView = (ListView) rootView.findViewById(R.id.mobile_list);
         Button btnUpload = (Button) rootView.findViewById(R.id.btnUpload);
@@ -109,9 +111,14 @@ public class HomeFragment extends Fragment {
                 myDownloadTask.execute((Void) null);
             }
         });
-
-        ActivityAdapter adapter = new ActivityAdapter(getActivity(), gpsActivities);
+        final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
+        if (adapter == null) {
+            adapter = new ActivityAdapter(getActivity(), gpsActivities);
+        }else {
+            adapter.updateAdapterContent(gpsActivities);
+        }
         listView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -124,6 +131,27 @@ public class HomeFragment extends Fragment {
             }
         });
         return rootView;
+    }
+
+    public void updateAdapter() {
+        if (adapter == null){
+            return;
+        }
+        final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
+        adapter.updateAdapterContent(gpsActivities);
+        listView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                GPSActivity gpsActivity = gpsActivities.get(position);
+                Intent intent = new Intent(getActivity(), DetailMapActivity.class);
+                intent.putExtra("name", gpsActivity.getName());
+                intent.putExtra("datetime", gpsActivity.get_datetime());
+                intent.putExtra("timezone", gpsActivity.get_timezone());
+                getActivity().startActivity(intent);
+            }
+        });
     }
 
     private void showProgress(final boolean show) {
@@ -146,6 +174,7 @@ public class HomeFragment extends Fragment {
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
         }
     }
+
     public class MyUpLoadTask extends AsyncTask <Void, Void, String>{
 
         @Override
@@ -189,7 +218,6 @@ public class HomeFragment extends Fragment {
         StringBuffer stringBuffer = new StringBuffer();
         try {
             // Simulate network access.
-            Thread.sleep(2000);
             String strurl = "http://115.159.188.64:8080/activity/upload_activity";
             stringBuffer.append("name").append("=").append(name)
                     .append("&")
@@ -230,8 +258,6 @@ public class HomeFragment extends Fragment {
             }
         }catch (IOException e){
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
         return result;
     }
@@ -242,7 +268,6 @@ public class HomeFragment extends Fragment {
             String result = "";
             try {
                 // Simulate network access.
-                Thread.sleep(2000);
                 String strurl = "http://115.159.188.64:8080/activity/read_activity_list";
                 URL url = new URL(strurl);
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
@@ -270,8 +295,6 @@ public class HomeFragment extends Fragment {
                     //System.out.println(result);
                 }
             }catch (IOException e){
-                e.printStackTrace();
-            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             return result;
@@ -302,21 +325,22 @@ public class HomeFragment extends Fragment {
                     gpsdbManager.saveActivityContent2(gpsActivity.getName(), content);
                 }
                 final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
-                ActivityAdapter adapter = new ActivityAdapter(getActivity(), gpsActivities);
-                listView.setAdapter(adapter);
-                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        GPSActivity gpsActivity = gpsActivities.get(position);
-                        Intent intent = new Intent(getActivity(), DetailMapActivity.class);
-                        intent.putExtra("name", gpsActivity.getName());
-                        intent.putExtra("datetime", gpsActivity.get_datetime());
-                        intent.putExtra("timezone", gpsActivity.get_timezone());
-                        getActivity().startActivity(intent);
-                    }
-                });
-                adapter.notifyDataSetChanged();
-
+                if (adapter != null) {
+                    adapter.updateAdapterContent(gpsActivities);
+                    listView.setAdapter(adapter);
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            GPSActivity gpsActivity = gpsActivities.get(position);
+                            Intent intent = new Intent(getActivity(), DetailMapActivity.class);
+                            intent.putExtra("name", gpsActivity.getName());
+                            intent.putExtra("datetime", gpsActivity.get_datetime());
+                            intent.putExtra("timezone", gpsActivity.get_timezone());
+                            getActivity().startActivity(intent);
+                        }
+                    });
+                    adapter.notifyDataSetChanged();
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }

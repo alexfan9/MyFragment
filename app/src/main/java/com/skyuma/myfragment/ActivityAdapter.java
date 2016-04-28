@@ -29,6 +29,10 @@ public class ActivityAdapter extends BaseAdapter implements View.OnClickListener
         inflater = ( LayoutInflater )_context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
     }
+    public void updateAdapterContent(ArrayList<GPSActivity>arrayList){
+        activityArrayList = arrayList;
+        this.notifyDataSetChanged();
+    }
     @Override
     public int getCount() {
         if (activityArrayList.size() <=0){
