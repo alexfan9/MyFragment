@@ -14,20 +14,15 @@ import java.util.ArrayList;
 /**
  * Created by afan on 2016/4/11.
  */
-public class ActivityAdapter extends BaseAdapter implements View.OnClickListener{
-
+public class ActivityAdapter extends BaseAdapter{
     /*********** Declare Used Variables *********/
     private ArrayList<GPSActivity>activityArrayList;
     private static LayoutInflater inflater=null;
     Context _context = null;
-
-    int i=0;
-
     public ActivityAdapter( Context context, ArrayList<GPSActivity>arrayList){
         activityArrayList = arrayList;
         _context = context;
         inflater = ( LayoutInflater )_context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
     }
     public void updateAdapterContent(ArrayList<GPSActivity>arrayList){
         activityArrayList = arrayList;
@@ -35,12 +30,8 @@ public class ActivityAdapter extends BaseAdapter implements View.OnClickListener
     }
     @Override
     public int getCount() {
-        if (activityArrayList.size() <=0){
-            return 1;
-        }
         return activityArrayList.size();
     }
-
     @Override
     public Object getItem(int position) {
         return position;
@@ -48,56 +39,34 @@ public class ActivityAdapter extends BaseAdapter implements View.OnClickListener
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder holder;
 
-        View rootView = inflater.inflate(R.layout.tabitem, null, true);
-
-        TextView txtTitle = (TextView) rootView.findViewById(R.id.item);
-        ImageView imageView = (ImageView) rootView.findViewById(R.id.icon);
-        TextView extratxt = (TextView) rootView.findViewById(R.id.textView1);
-
-        if (activityArrayList.isEmpty()) {
-            txtTitle.setText("Empty");
-        } else {
-            GPSActivity gpsActivity = activityArrayList.get(position);
-            txtTitle.setText(gpsActivity.getName());
-            imageView.setImageResource(R.drawable.rain);
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
-            String strDate =  simpleDateFormat.format(gpsActivity.get_datetime());
-            extratxt.setText(strDate + " "  + gpsActivity.get_timezone());
+        if (convertView == null){
+            holder = new ViewHolder();
+            convertView = inflater.inflate(R.layout.tabitem, null, true);
+            holder.img = (ImageView) convertView.findViewById(R.id.icon);
+            holder.title = (TextView) convertView.findViewById(R.id.item);
+            holder.info = (TextView) convertView.findViewById(R.id.textView1);
+            convertView.setTag(holder);
+        }else{
+            holder = (ViewHolder) convertView.getTag();
         }
-        return rootView;
-
+        GPSActivity gpsActivity = activityArrayList.get(position);
+        holder.img.setImageResource(R.mipmap.ic_launcher);
+        holder.title.setText(gpsActivity.getName());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
+        String strDate =  simpleDateFormat.format(gpsActivity.get_datetime());
+        holder.info.setText(strDate + gpsActivity.get_timezone());
+        return convertView;
     }
-
-    @Override
-    public void onClick(View v) {
-
-    }
-
-    private class OnItemClickListener implements View.OnClickListener{
-        private int mPosition;
-        OnItemClickListener(int position){
-            mPosition = position;
-        }
-        @Override
-        public void onClick(View v) {
-            System.out.println("OnItemClickListener click");
-        }
-    }
-
     /********* Create a holder Class to contain inflated xml file elements *********/
     public static class ViewHolder{
-
-        public TextView text;
-        public TextView text1;
-        //public TextView textWide;
-        //public ImageView image;
-
+        public ImageView img;
+        public TextView title;
+        public TextView info;
     }
-
 }

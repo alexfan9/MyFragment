@@ -81,9 +81,6 @@ public class SettingsFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String item = "You click postion:" + mAdapter.getItem(position) + "id:" + mAdapter.getItemId(position);
-                Toast.makeText(getActivity(), item, Toast.LENGTH_SHORT).show();
-
                 if (position == 1) {
                     Context context = getActivity();
                     SessionManager session = new SessionManager(context);
