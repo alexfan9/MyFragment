@@ -97,6 +97,7 @@ public class RunViewPagerFragment extends Fragment  {
         fragmentList.add(runFragment);
         fragmentList.add(paceFragment);
         fragmentList.add(mapFragment);
+        pager.setOffscreenPageLimit(2);
         pager.setAdapter(new RunFragmentPagerAdapter(getActivity().getSupportFragmentManager(), fragmentList));
         pager.setCurrentItem(0);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {

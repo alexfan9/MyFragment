@@ -21,7 +21,6 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -34,7 +33,6 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -48,7 +46,7 @@ public class RunFragment extends Fragment {
     TextView textView, textViewStatus;
     private Chronometer timer;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
-    JSONArray jsonArray2 = new JSONArray();
+    JSONArray jsonArray = new JSONArray();
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -112,23 +110,21 @@ public class RunFragment extends Fragment {
             if (gpsdbManager != null){
                 gpsdbManager.add(gpsLocation);
             }
-            List<GPSLocation> locations = gpsdbManager.query();
-            JSONArray jsonArray = new JSONArray();
-            Iterator it1 = locations.iterator();
-            while (it1.hasNext()){
-                JSONObject jsonObject = new JSONObject();
-                GPSLocation location2 = (GPSLocation) it1.next();
-                try {
-                    jsonObject.put("latitude", location2.getLantitude());
-                    jsonObject.put("longitude", location2.getLongitude());
-                    jsonObject.put("altitude", location2.getAltitude());
-                    jsonObject.put("speed", location2.getSpeed());
-                    jsonObject.put("date", location2.getTime());
-                    jsonArray.put(jsonObject);
-                } catch (JSONException e){
-                    e.printStackTrace();
-                }
+            if (jsonArray == null){
+                jsonArray = new JSONArray();
             }
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("latitude", location.getLatitude());
+                jsonObject.put("longitude", location.getLongitude());
+                jsonObject.put("altitude", location.getAltitude());
+                jsonObject.put("speed", location.getSpeed());
+                jsonObject.put("date", location.getTime());
+                jsonArray.put(jsonObject);
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
+
             String latLongString;
             if (location != null) {
                 double lat = location.getLatitude();
@@ -139,12 +135,16 @@ public class RunFragment extends Fragment {
                 float bea = location.getBearing();// 轴承
                 long tim = location.getTime();// 返回UTC时间1970年1月1毫秒
                 latLongString = "纬度:" + lat + "\n经度:" + lng + "\n精度：" + acc
-                        + "\n速度：" + spe + "\n海拔：" + alt + "\n轴承：" + bea + "\n时间："
-                        + sdf.format(tim);
+                        + "\n速度：" + spe + "\n海拔：" + alt + "\n轴承：" + bea
+                        + "\n点数：" + jsonArray.length()
+                        + "\n时间："+ sdf.format(tim);
 
                 MainActivity activity = (MainActivity) getActivity();
                 PaceFragment paceFragment = (PaceFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(1);
-                paceFragment.textView.setText(latLongString);
+                MapFragment mapFragment = (MapFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(2);
+                mapFragment.setCurrentLocation(location);
+                paceFragment.textView.setText(jsonArray.toString());
+                //mapFragment.updateLocation(location, jsonArray);
             } else {
                 latLongString = "无法获取位置信息";
             }
@@ -214,15 +214,6 @@ public class RunFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_run, container, false);
         textView = (TextView) rootView.findViewById(R.id.textViewGPS);
         textViewStatus = (TextView) rootView.findViewById(R.id.textViewStatus);
-        Button button = (Button) rootView.findViewById(R.id.btnPaceChange);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MainActivity activity = (MainActivity) getActivity();
-                PaceFragment paceFragment = (PaceFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(1);
-                paceFragment.textView.setText("latLongString");
-            }
-        });
         timer = (Chronometer)rootView.findViewById(R.id.chronometer);
         timer.setBase(SystemClock.elapsedRealtime());
         numSatelliteList = new ArrayList<GpsSatellite>();
@@ -291,6 +282,7 @@ public class RunFragment extends Fragment {
                                 textView.setText("GPS Stop");
                                 timer.setBase(SystemClock.elapsedRealtime());
                                 timer.stop();
+                                jsonArray = null;
                                 gpsdbManager.createActivity("activity");
                                 mCallback.OnSettingChanged();
 
@@ -319,7 +311,7 @@ public class RunFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (checkGpsPermission() == true) {
-                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
+                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
                             is_running = true;
                             imageButtonStart.setImageResource(R.drawable.stop_selector);
                             textView.setText("GPS Start");

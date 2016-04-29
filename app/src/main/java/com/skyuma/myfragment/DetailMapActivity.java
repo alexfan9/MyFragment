@@ -3,7 +3,6 @@ package com.skyuma.myfragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.baidu.mapapi.map.BaiduMap;
@@ -63,11 +62,16 @@ public class DetailMapActivity extends Activity{
     }
 
     public void addTrack(JSONArray jsonArray){
+        double myLat = 0.0;
+        double myLng = 0.0;
         List<LatLng> points = new ArrayList<LatLng>();
         LatLng start = null;
         LatLng end = null;
         CoordinateConverter converter = new CoordinateConverter();
         converter.from(CoordinateConverter.CoordType.GPS);
+        if (jsonArray.length() == 0){
+            return;
+        }
         for (int i = 0; i < jsonArray.length(); i++){
             try {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -80,6 +84,8 @@ public class DetailMapActivity extends Activity{
                 }else if (i == jsonArray.length() -1){
                     end = point;
                 }
+                myLat += point.latitude;
+                myLng += point.longitude;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -103,7 +109,11 @@ public class DetailMapActivity extends Activity{
                     .zIndex(9).draggable(true);
             mMarkerA = (Marker) (mBaiduMap.addOverlay(ooB));
         }
-        MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(end, 18);
+        //OverlayOptions options;
+        LatLng avePoint = new LatLng(myLat / jsonArray.length(), myLng / jsonArray.length());
+        //options = new DotOptions().center(avePoint).color(0xAAff00ff).radius(15);
+        //mBaiduMap.addOverlay(options);
+        MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(avePoint, 18);
         mBaiduMap.animateMapStatus(u);
 
     }
