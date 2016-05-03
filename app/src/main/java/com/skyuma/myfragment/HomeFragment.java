@@ -7,12 +7,14 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -36,11 +38,13 @@ import java.util.Iterator;
  * Use the {@link HomeFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
+    TextView textView;
     ListView listView;
     private View mProgressView;
     ActivityAdapter adapter = null;
     GPSDBManager gpsdbManager = null;
+    SwipeRefreshLayout swipeRefreshLayout;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -89,8 +93,22 @@ public class HomeFragment extends Fragment {
 
         View rootView =  inflater.inflate(R.layout.fragment_home, container, false);
         gpsdbManager = new GPSDBManager(getActivity());
-
-
+        textView = (TextView) rootView.findViewById(R.id.textViewRefresh);
+        swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+        swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_light,
+                android.R.color.holo_red_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_green_light);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                textView.setText("Refreshing...");
+                textView.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(true);
+                MyDownloadTask myDownloadTask = new MyDownloadTask();
+                myDownloadTask.execute((Void) null);
+            }
+        });
         listView = (ListView) rootView.findViewById(R.id.mobile_list);
         Button btnUpload = (Button) rootView.findViewById(R.id.btnUpload);
         mProgressView = rootView.findViewById(R.id.home_progress);
@@ -100,15 +118,6 @@ public class HomeFragment extends Fragment {
                 showProgress(true);
                 MyUpLoadTask myUpLoadTask = new MyUpLoadTask();
                 myUpLoadTask.execute((Void) null);
-            }
-        });
-        Button btnDownload = (Button) rootView.findViewById(R.id.btnDownload);
-        btnDownload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showProgress(true);
-                MyDownloadTask myDownloadTask = new MyDownloadTask();
-                myDownloadTask.execute((Void) null);
             }
         });
         final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
@@ -173,6 +182,14 @@ public class HomeFragment extends Fragment {
             // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
         }
+    }
+
+    @Override
+    public void onRefresh() {
+        showProgress(true);
+        swipeRefreshLayout.setRefreshing(true);
+        MyDownloadTask myDownloadTask = new MyDownloadTask();
+        myDownloadTask.execute((Void) null);
     }
 
     public class MyUpLoadTask extends AsyncTask <Void, Void, String>{
@@ -344,6 +361,8 @@ public class HomeFragment extends Fragment {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            swipeRefreshLayout.setRefreshing(false);
+            textView.setVisibility(View.GONE);
         }
 
         protected void onPostExecute2(String s) {

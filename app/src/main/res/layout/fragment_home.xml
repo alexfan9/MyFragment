@@ -21,20 +21,30 @@
             android:id="@+id/btnUpload"
             android:layout_weight="1"
             android:text="Upload"/>
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnDownload"
-            android:layout_weight="1"
-            android:text="Download"/>
     </LinearLayout>
-
-    <ListView
-        android:id="@+id/mobile_list"
+    <TextView
+        android:id="@+id/textViewRefresh"
+        android:visibility="gone"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:textSize="20sp"
+        android:textStyle="bold"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:divider="#b5b5b5"
-        android:dividerHeight="1dp"
-        android:listSelector="@drawable/list_selector" />
+        android:layout_height="wrap_content" />
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ListView
+            android:id="@+id/mobile_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="#b5b5b5"
+            android:dividerHeight="1dp"
+            android:listSelector="@drawable/list_selector" />
+    </android.support.v4.widget.SwipeRefreshLayout>
+
 
 </LinearLayout>
