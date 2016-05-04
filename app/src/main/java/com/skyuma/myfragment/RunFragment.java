@@ -330,7 +330,7 @@ public class RunFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (checkGpsPermission() == true) {
-                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
+                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, locationListener);
                             is_running = true;
                             imageButtonStart.setImageResource(R.drawable.stop_selector);
                             textView.setText("GPS Start");
