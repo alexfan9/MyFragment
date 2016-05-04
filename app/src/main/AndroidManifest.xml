@@ -24,17 +24,26 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
-        <!-- Windows <meta-data
-            android:name="com.baidu.lbsapi.API_KEY"
-            android:value="BYGSGTOgSHq1F0OrDi8BLt5P" />-->
-
-        <!--MAC-->
+         Windows 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
+            android:value="BYGSGTOgSHq1F0OrDi8BLt5P" />
+
+        <!-- MAC -->
+        <!--
+            <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
             android:value="nBuccW9KqKydtIcRtfOGOAEWb47Vz6V1" />
-
-
-
+        -->
+        <activity
+            android:name=".SplashScreenActivity"
+            android:label="@string/title_activity_splash_screen"
+            android:theme="@style/AppTheme.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity android:name=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -56,6 +65,7 @@
             android:label="@string/title_activity_detail_map"
             android:screenOrientation="portrait" >
         </activity>
+
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
@@ -120,6 +130,7 @@
             android:label="@string/demo_name_location"
             android:screenOrientation="portrait" >
         </activity>
+
     </application>
 
 </manifest>

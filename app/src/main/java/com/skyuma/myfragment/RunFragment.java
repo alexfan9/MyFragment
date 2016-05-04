@@ -47,7 +47,8 @@ public class RunFragment extends Fragment {
     private Chronometer timer;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
     JSONArray jsonArray = new JSONArray();
-
+    Location last_location;
+    double distance;
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -127,6 +128,10 @@ public class RunFragment extends Fragment {
 
             String latLongString;
             if (location != null) {
+                if (last_location != null){
+                    distance += getDistance(last_location.getLatitude(), last_location.getLongitude(), location.getLatitude(), location.getLongitude());
+                }
+                last_location = location;
                 double lat = location.getLatitude();
                 double lng = location.getLongitude();
                 float spe = location.getSpeed();// 速度
@@ -137,13 +142,15 @@ public class RunFragment extends Fragment {
                 latLongString = "纬度:" + lat + "\n经度:" + lng + "\n精度：" + acc
                         + "\n速度：" + spe + "\n海拔：" + alt + "\n轴承：" + bea
                         + "\n点数：" + jsonArray.length()
+                        + "\n距离：" + (int)distance + " 米"
                         + "\n时间："+ sdf.format(tim);
 
                 MainActivity activity = (MainActivity) getActivity();
                 PaceFragment paceFragment = (PaceFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(1);
                 MapFragment mapFragment = (MapFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(2);
                 mapFragment.setCurrentLocation(location);
-                paceFragment.textView.setText(jsonArray.toString());
+
+                paceFragment.textView.setText("距离：" + (int) distance + " 米");
                 //mapFragment.updateLocation(location, jsonArray);
             } else {
                 latLongString = "无法获取位置信息";
@@ -166,6 +173,12 @@ public class RunFragment extends Fragment {
 
         }
     };
+
+    public double getDistance(double lat1, double lon1, double lat2, double lon2){
+        float[] results = new float[1];
+        Location.distanceBetween(lat1, lon1, lat2, lon2, results);
+        return  results[0];
+    }
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -282,10 +295,16 @@ public class RunFragment extends Fragment {
                                 textView.setText("GPS Stop");
                                 timer.setBase(SystemClock.elapsedRealtime());
                                 timer.stop();
-                                jsonArray = null;
-                                gpsdbManager.createActivity("activity");
-                                mCallback.OnSettingChanged();
+                                if (jsonArray != null) {
 
+                                    if (jsonArray.length() >= 5) {
+                                        gpsdbManager.createActivity("activity");
+                                        mCallback.OnSettingChanged();
+                                    } else {
+                                        Toast.makeText(getActivity(), "距离太短,此次活动将不被保存.", Toast.LENGTH_SHORT).show();
+                                    }
+                                    jsonArray = null;
+                                }
                             }
                         }
                     })

@@ -138,4 +138,5 @@
     <string name="title_activity_poi_near_by_search_demo">PoiNearBySearchDemo</string>
     <string name="instruction">当设计的UI与地图部分重叠时，设置地图的padding值,以防止UI遮挡</string>
     <string name="title_activity_test2_map">Test2MapActivity</string>
+    <string name="title_activity_splash_screen">SplashScreenActivity</string>
 </resources>
