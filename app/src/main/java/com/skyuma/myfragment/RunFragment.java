@@ -135,6 +135,9 @@ public class RunFragment extends Fragment {
                 double lat = location.getLatitude();
                 double lng = location.getLongitude();
                 float spe = location.getSpeed();// 速度
+                float pace = 1000/spe;
+                int min = (int)(pace / 60);
+                int sec = (int)(pace % 60);
                 float acc = location.getAccuracy();// 精度
                 double alt = location.getAltitude();// 海拔
                 float bea = location.getBearing();// 轴承
@@ -143,6 +146,7 @@ public class RunFragment extends Fragment {
                         + "\n速度：" + spe + "\n海拔：" + alt + "\n轴承：" + bea
                         + "\n点数：" + jsonArray.length()
                         + "\n距离：" + (int)distance + " 米"
+                        + "\n实时配速：" + min + "分" + sec + "秒"
                         + "\n时间："+ sdf.format(tim);
 
                 MainActivity activity = (MainActivity) getActivity();
