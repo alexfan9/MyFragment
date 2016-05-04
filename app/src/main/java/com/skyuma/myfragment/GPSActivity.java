@@ -7,6 +7,15 @@ public class GPSActivity {
     private String name;
     private long _datetime;
     private String _timezone;
+    private int _new;
+
+    public int get_new() {
+        return _new;
+    }
+
+    public void set_new(int _new) {
+        this._new = _new;
+    }
 
     public GPSActivity(String name, long _datetime, String _timezone) {
         this.name = name;

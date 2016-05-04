@@ -20,7 +20,7 @@ public class GPSDBHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS activity" +
                 "(_id INTEGER PRIMARY KEY AUTOINCREMENT, _lantitude REAL, _longitude REAL, _altitude REAL,_speed REAL,_time INTEGER)");
         db.execSQL("CREATE TABLE IF NOT EXISTS activity_list" +
-                "(_id INTEGER PRIMARY KEY AUTOINCREMENT, _activity TEXT, _datetime INTEGER, _atimezone TEXT)");
+                "(_id INTEGER PRIMARY KEY AUTOINCREMENT, _activity TEXT, _datetime INTEGER, _atimezone TEXT, _new INTEGER)");
         System.out.println("database created");
     }
 

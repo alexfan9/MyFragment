@@ -120,6 +120,11 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 myUpLoadTask.execute((Void) null);
             }
         });
+        setListViewAdapter();
+        return rootView;
+    }
+
+    public void setListViewAdapter() {
         final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
         if (adapter == null) {
             adapter = new ActivityAdapter(getActivity(), gpsActivities);
@@ -139,9 +144,7 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 getActivity().startActivity(intent);
             }
         });
-        return rootView;
     }
-
     public void updateAdapter() {
         if (adapter == null){
             return;
@@ -201,17 +204,19 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            String result = "ok";
+            String result = "";
             GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
             ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
             Iterator iterator = gpsActivities.iterator();
             while (iterator.hasNext()){
                 GPSActivity gpsActivity = (GPSActivity) iterator.next();
-                JSONArray jsonArray = gpsdbManager.getActivityContent(gpsActivity.getName());
-                result = doUpLoad(gpsActivity.getName(),
-                        gpsActivity.get_datetime(),
-                        "China",
-                        jsonArray.toString());
+                if (gpsActivity.get_new() == 1) {
+                    JSONArray jsonArray = gpsdbManager.getActivityContent(gpsActivity.getName());
+                    result = doUpLoad(gpsActivity.getName(),
+                            gpsActivity.get_datetime(),
+                            "China",
+                            jsonArray.toString());
+                }
             }
             return result;
         }
@@ -220,13 +225,22 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         protected void onPreExecute() {
             super.onPreExecute();
             showProgress(true);
+
         }
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             showProgress(false);
-            Toast.makeText(getActivity(), "Upload successfully " + s, Toast.LENGTH_SHORT).show();
+            if (s.isEmpty() == false) {
+                Toast.makeText(getActivity(), "Upload successfully " + s, Toast.LENGTH_SHORT).show();
+                GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
+                gpsdbManager.setActivityUnRead(s);
+                setListViewAdapter();
+            }else{
+                Toast.makeText(getActivity(), "Upload successfully s is empty", Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 
@@ -234,7 +248,6 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         String result = "OK";
         StringBuffer stringBuffer = new StringBuffer();
         try {
-            // Simulate network access.
             String strurl = "http://115.159.188.64:8080/activity/upload_activity";
             stringBuffer.append("name").append("=").append(name)
                     .append("&")
@@ -279,7 +292,6 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         return result;
     }
     public class MyDownloadTask extends AsyncTask <Void, Void, String>{
-
         @Override
         protected String doInBackground(Void... params) {
             String result = "";
@@ -309,20 +321,16 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                         e.printStackTrace();
                     }
                     result = new String(byteArrayOutputStream.toByteArray());
-                    //System.out.println(result);
                 }
             }catch (IOException e){
                 e.printStackTrace();
             }
             return result;
         }
-
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
         }
-
-
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
@@ -341,63 +349,12 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                     gpsdbManager.saveActivity(gpsActivity);
                     gpsdbManager.saveActivityContent2(gpsActivity.getName(), content);
                 }
-                final ArrayList<GPSActivity> gpsActivities = gpsdbManager.getActivities();
-                if (adapter != null) {
-                    adapter.updateAdapterContent(gpsActivities);
-                    listView.setAdapter(adapter);
-                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            GPSActivity gpsActivity = gpsActivities.get(position);
-                            Intent intent = new Intent(getActivity(), DetailMapActivity.class);
-                            intent.putExtra("name", gpsActivity.getName());
-                            intent.putExtra("datetime", gpsActivity.get_datetime());
-                            intent.putExtra("timezone", gpsActivity.get_timezone());
-                            getActivity().startActivity(intent);
-                        }
-                    });
-                    adapter.notifyDataSetChanged();
-                }
+                setListViewAdapter();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             swipeRefreshLayout.setRefreshing(false);
             textView.setVisibility(View.GONE);
-        }
-
-        protected void onPostExecute2(String s) {
-            super.onPostExecute(s);
-            showProgress(false);
-            try {
-                JSONArray jsonArray = new JSONArray(s);
-                System.out.println(jsonArray.toString());
-                final ArrayList<GPSActivity> gpsActivities = new ArrayList<>();
-                for (int i = 0; i < jsonArray.length(); i++){
-                    JSONArray jsonArray1 = jsonArray.getJSONArray(i);
-                    GPSActivity gpsActivity = new GPSActivity();
-                    gpsActivity.setName(jsonArray1.getString(1));
-                    gpsActivity.set_datetime(jsonArray1.getLong(2));
-                    gpsActivity.set_timezone(jsonArray1.getString(3));
-                    gpsActivities.add(gpsActivity);
-                }
-                ActivityAdapter adapter = new ActivityAdapter(getActivity(), gpsActivities);
-                listView.setAdapter(adapter);
-                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        GPSActivity gpsActivity = gpsActivities.get(position);
-                        Intent intent = new Intent(getActivity(), DetailMapActivity.class);
-                        intent.putExtra("name", gpsActivity.getName());
-                        intent.putExtra("datetime", gpsActivity.get_datetime());
-                        intent.putExtra("timezone", gpsActivity.get_timezone());
-                        getActivity().startActivity(intent);
-                    }
-                });
-                adapter.notifyDataSetChanged();
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
         }
         @Override
         protected void onCancelled() {

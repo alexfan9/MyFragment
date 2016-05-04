@@ -51,8 +51,8 @@ public class GPSDBManager {
             TimeZone tz = TimeZone.getDefault();
             String strTimeZone = tz.getDisplayName();
 
-            db.execSQL("INSERT INTO activity_list VALUES(null, ?, ?, ?)",
-                    new Object[]{name, dateToken, strTimeZone});
+            db.execSQL("INSERT INTO activity_list VALUES(null, ?, ?, ?, ?)",
+                    new Object[]{name, dateToken, strTimeZone, 1});
             gpsdbHelper.backup(db, name);
             db.setTransactionSuccessful();
         } finally {
@@ -89,8 +89,28 @@ public class GPSDBManager {
     public void saveActivity(GPSActivity gpsActivity){
         db.beginTransaction();
         try {
-            db.execSQL("INSERT INTO activity_list VALUES(null, ?, ?, ?)",
-                    new Object[]{gpsActivity.getName(), gpsActivity.get_datetime(), gpsActivity.get_timezone()});
+            int count = 0;
+            String sql = "SELECT * FROM activity_list where _activity = '"+ gpsActivity.getName() +"'";
+            Cursor c = db.rawQuery(sql, null);
+            while (c.moveToNext()) {
+                count ++;
+            }
+            if (count > 0){
+                return;
+            }
+            db.execSQL("INSERT INTO activity_list VALUES(null, ?, ?, ?, ?)",
+                    new Object[]{gpsActivity.getName(), gpsActivity.get_datetime(), gpsActivity.get_timezone(), gpsActivity.get_new()});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void setActivityUnRead(String name){
+        db.beginTransaction();
+        try {
+            String sql = "update activity_list set _new = 0 where _activity = '"+ name +"'";
+            db.execSQL(sql);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
@@ -207,12 +227,13 @@ public class GPSDBManager {
     public ArrayList<GPSActivity> getActivities() {
         ArrayList<GPSActivity> gpsActivities = new ArrayList<GPSActivity>();
         try {
-            Cursor c = db.rawQuery("SELECT * FROM activity_list", null);
+            Cursor c = db.rawQuery("SELECT * FROM activity_list order by _datetime desc", null);
             while (c.moveToNext()) {
                 GPSActivity gpsActivity = new GPSActivity();
                 gpsActivity.setName(c.getString(c.getColumnIndex("_activity")));
                 gpsActivity.set_datetime(c.getLong(c.getColumnIndex("_datetime")));
                 gpsActivity.set_timezone(c.getString(c.getColumnIndex("_atimezone")));
+                gpsActivity.set_new(c.getInt(c.getColumnIndex("_new")));
                 gpsActivities.add(gpsActivity);
             }
             c.close();

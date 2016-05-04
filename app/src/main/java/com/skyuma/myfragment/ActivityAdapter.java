@@ -57,7 +57,11 @@ public class ActivityAdapter extends BaseAdapter{
         }
         GPSActivity gpsActivity = activityArrayList.get(position);
         holder.img.setImageResource(R.mipmap.ic_launcher);
-        holder.title.setText(gpsActivity.getName());
+        if (gpsActivity.get_new() == 1) {
+            holder.title.setText(gpsActivity.getName() + "(New)");
+        }else{
+            holder.title.setText(gpsActivity.getName());
+        }
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
         String strDate =  simpleDateFormat.format(gpsActivity.get_datetime());
         holder.info.setText(strDate + gpsActivity.get_timezone());
