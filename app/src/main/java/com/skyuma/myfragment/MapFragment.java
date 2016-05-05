@@ -65,7 +65,7 @@ public class MapFragment extends Fragment {
                     accuracyCircleFillColor, accuracyCircleStrokeColor));
             mBaiduMap.animateMapStatus(u);
             OverlayOptions options = new DotOptions().center(point).color(0xAA00ff00)
-                    .radius(15);
+                    .radius(10);
             mBaiduMap.addOverlay(options);
         }
     }

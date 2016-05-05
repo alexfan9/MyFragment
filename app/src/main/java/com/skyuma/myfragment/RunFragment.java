@@ -14,6 +14,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
@@ -48,6 +49,7 @@ public class RunFragment extends Fragment {
     OnSettingChangedListener mCallback = null;
     TextView textView, textViewStatus;
     private Chronometer timer;
+    PowerManager.WakeLock wakeLock = null;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
     JSONArray jsonArray = new JSONArray();
     Location first_location;
@@ -182,7 +184,7 @@ public class RunFragment extends Fragment {
                 }
                 last_location = location;
                 tmp_location = location;
-                paceFragment.textView.setText("距离：" + (float) Math.round( (float)(distance / 10)/100) + " 千米");
+                paceFragment.textView.setText("距离：" + (float) (distance /1000) + " 千米");
             } else {
                 latLongString = "无法获取位置信息";
             }
@@ -311,6 +313,23 @@ public class RunFragment extends Fragment {
         }
     }
 
+    //获取电源锁，保持该服务在屏幕熄灭时仍然获取CPU时，保持运行
+    private void acquireWakeLock() {
+        if (null == wakeLock) {
+            PowerManager pm = (PowerManager)getActivity().getSystemService(Context.POWER_SERVICE);
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK|PowerManager.ON_AFTER_RELEASE, "PostLocationService");
+            if (null != wakeLock){
+                wakeLock.acquire();
+            }
+        }
+    }
+    //释放设备电源锁
+    private void releaseWakeLock() {
+        if (null != wakeLock){
+            wakeLock.release();
+            wakeLock = null;
+        }
+    }
     protected void stopRunning() {
         if (locationManager != null && locationListener != null) {
             new AlertDialog.Builder(getActivity())
@@ -321,6 +340,7 @@ public class RunFragment extends Fragment {
                         public void onClick(DialogInterface dialog, int which) {
                             if (checkGpsPermission() == true) {
                                 locationManager.removeUpdates(locationListener);
+                                releaseWakeLock();
                                 is_running = false;
                                 imageButtonStart.setImageResource(R.drawable.start_selector);
                                 textView.setText("GPS Stop");
@@ -361,6 +381,7 @@ public class RunFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (checkGpsPermission() == true) {
+                            acquireWakeLock();
                             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, locationListener);
                             is_running = true;
                             imageButtonStart.setImageResource(R.drawable.stop_selector);
