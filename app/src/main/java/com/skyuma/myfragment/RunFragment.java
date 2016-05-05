@@ -32,7 +32,10 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -47,8 +50,13 @@ public class RunFragment extends Fragment {
     private Chronometer timer;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
     JSONArray jsonArray = new JSONArray();
+    Location first_location;
     Location last_location;
+    Location tmp_location;
     double distance;
+    double tmp_distance;
+    int index = 0;
+    List<Map<String, Object>> sectionList = new ArrayList<Map<String, Object>>();
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -129,9 +137,14 @@ public class RunFragment extends Fragment {
             String latLongString;
             if (location != null) {
                 if (last_location != null){
-                    distance += getDistance(last_location.getLatitude(), last_location.getLongitude(), location.getLatitude(), location.getLongitude());
+                    double temp = getDistance(last_location.getLatitude(), last_location.getLongitude(), location.getLatitude(), location.getLongitude());
+                    distance += temp;
+                    tmp_distance += temp;
                 }
-                last_location = location;
+                if (first_location == null){
+                    first_location = location;
+                }
+
                 double lat = location.getLatitude();
                 double lng = location.getLongitude();
                 float spe = location.getSpeed();// 速度
@@ -142,20 +155,34 @@ public class RunFragment extends Fragment {
                 double alt = location.getAltitude();// 海拔
                 float bea = location.getBearing();// 轴承
                 long tim = location.getTime();// 返回UTC时间1970年1月1毫秒
+                float cal = (float)(60 * distance * 1.036 ) /1000;
+
                 latLongString = "纬度:" + lat + "\n经度:" + lng + "\n精度：" + acc
                         + "\n速度：" + spe + "\n海拔：" + alt + "\n轴承：" + bea
                         + "\n点数：" + jsonArray.length()
                         + "\n距离：" + (int)distance + " 米"
-                        + "\n实时配速：" + min + "分" + sec + "秒"
+                        + "\n当前配速：" + min + "分" + sec + "秒"
+                        + "\n卡路里：" + cal
                         + "\n时间："+ sdf.format(tim);
 
                 MainActivity activity = (MainActivity) getActivity();
                 PaceFragment paceFragment = (PaceFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(1);
                 MapFragment mapFragment = (MapFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(2);
                 mapFragment.setCurrentLocation(location);
-
-                paceFragment.textView.setText("距离：" + (int) distance + " 米");
-                //mapFragment.updateLocation(location, jsonArray);
+                if (tmp_distance >= 1000){
+                    long section_time = location.getTime() - tmp_location.getTime();
+                    long total_time = location.getTime() - first_location.getTime();
+                    tmp_location = location;
+                    Map<String, Object> item = new HashMap<String, Object>();
+                    item.put("total_time", total_time);
+                    item.put("section_time", section_time);
+                    sectionList.add(item);
+                    paceFragment.updateAdapter(sectionList);
+                    tmp_distance = 0;
+                }
+                last_location = location;
+                tmp_location = location;
+                paceFragment.textView.setText("距离：" + (float) Math.round( (float)(distance / 10)/100) + " 千米");
             } else {
                 latLongString = "无法获取位置信息";
             }

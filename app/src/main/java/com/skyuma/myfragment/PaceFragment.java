@@ -1,11 +1,18 @@
 package com.skyuma.myfragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -21,6 +28,8 @@ public class PaceFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     TextView textView = null;
+    ListView listView;
+    PaceAdapter adapter = null;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -61,6 +70,15 @@ public class PaceFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_pace, container, false);
         textView = (TextView) rootView.findViewById(R.id.idPaceTextView);
+        listView = (ListView) rootView.findViewById(R.id.pace_list);
         return rootView;
+    }
+
+    public void updateAdapter(List<Map<String, Object>> sectionList) {
+        if (adapter == null){
+            adapter = new PaceAdapter(getActivity(), sectionList);
+        }
+        listView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 }
