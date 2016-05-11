@@ -28,6 +28,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 
@@ -216,7 +217,7 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                             gpsActivity.get_datetime(),
                             "China",
                             jsonArray.toString());
-                }
+               }
             }
             return result;
         }
@@ -247,9 +248,15 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private String doUpLoad(String name, long date, String zone, String content){
         String result = "OK";
         StringBuffer stringBuffer = new StringBuffer();
+        SessionManager session;
+        session = new SessionManager(getActivity().getApplicationContext());
+        HashMap<String, String>  hashMap = session.getUserDetails();
+
         try {
             String strurl = "http://115.159.188.64:8080/activity/upload_activity";
-            stringBuffer.append("name").append("=").append(name)
+            stringBuffer.append("user_id").append("=").append(hashMap.get("userid"))
+                    .append("&")
+                    .append("name").append("=").append(name)
                     .append("&")
                     .append("a_date").append("=").append(date)
                     .append("&")
@@ -257,6 +264,7 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                     .append("&")
                     .append("content").append("=").append(URLEncoder.encode(content, "utf-8"));
 
+            System.out.println("param:" + stringBuffer.toString());
             byte[] data = stringBuffer.toString().getBytes();
             URL url = new URL(strurl);
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();

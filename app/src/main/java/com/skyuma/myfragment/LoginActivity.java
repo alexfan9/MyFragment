@@ -215,7 +215,7 @@ public class LoginActivity extends AppCompatActivity {
                 // Use user real data
                 System.out.println("result:" + result );
                 session = new SessionManager(getApplicationContext());
-                session.createLoginSession("Android Hive", "anroidhive@gmail.com");
+                session.createLoginSession(mUsername, result);
                 Intent i = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(i);
                 finish();

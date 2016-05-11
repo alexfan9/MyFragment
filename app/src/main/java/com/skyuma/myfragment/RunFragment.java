@@ -263,6 +263,7 @@ public class RunFragment extends Fragment {
         timer = (Chronometer)rootView.findViewById(R.id.chronometer);
         timer.setBase(SystemClock.elapsedRealtime());
         numSatelliteList = new ArrayList<GpsSatellite>();
+        acquireWakeLock();
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         if (locationManager == null) {
             Toast.makeText(getActivity(), "The Location servivce has not start yet.", Toast.LENGTH_SHORT).show();
@@ -340,6 +341,7 @@ public class RunFragment extends Fragment {
                         public void onClick(DialogInterface dialog, int which) {
                             if (checkGpsPermission() == true) {
                                 locationManager.removeUpdates(locationListener);
+                                locationManager = null;
                                 releaseWakeLock();
                                 is_running = false;
                                 imageButtonStart.setImageResource(R.drawable.start_selector);
@@ -366,6 +368,7 @@ public class RunFragment extends Fragment {
 
     protected void startRunning() {
         if (locationManager == null) {
+            acquireWakeLock();
             locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         }
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == false) {
@@ -381,8 +384,7 @@ public class RunFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (checkGpsPermission() == true) {
-                            acquireWakeLock();
-                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, locationListener);
+                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
                             is_running = true;
                             imageButtonStart.setImageResource(R.drawable.stop_selector);
                             textView.setText("GPS Start");
