@@ -63,6 +63,54 @@ public class DetailMapActivity extends Activity{
         double totalDistalce = getTotalDistance(jsonArray);
         TextView textViewDistance = (TextView) findViewById(R.id.txtDistance);
         textViewDistance.setText( meter2km((int)totalDistalce) + "公里");
+
+        int len = jsonArray.length();
+        try {
+            JSONObject first = jsonArray.getJSONObject(0);
+            JSONObject last = jsonArray.getJSONObject(len -1);
+            long period = (last.getLong("date") - first.getLong("date"))/1000;
+            int usec = 1;
+            int umin = usec * 60 ;
+            int uhour = umin * 60;
+            int uday = uhour * 24;
+
+            long days = period / uday;
+            long hours = (period % uday) /uhour;
+            long miniutes = (period % uhour) /umin;
+            long seconds = period % umin;
+
+            String str = "";
+            if (days > 0){
+                str = (""+days+"天"+hours+"小时"+miniutes+"分"+seconds+"秒");
+            }else if (hours > 0){
+                str = (""+ hours+"小时"+miniutes+"分"+seconds+"秒");
+            }else if (miniutes > 0){
+                str = (""+miniutes+"分"+seconds+"秒");
+            }else{
+                str = (""+seconds+"秒");
+            }
+
+            float spe = (float)(totalDistalce / period);
+            float pace = 1000/spe;
+            int min = (int)(pace / 60);
+            int sec = (int)(pace % 60);
+
+            TextView txtLastTime = (TextView) findViewById(R.id.txtLastTime);
+            txtLastTime.setText(str);
+
+            str = (""+min+"分"+sec+"秒");
+            TextView txtAvgPace = (TextView) findViewById(R.id.txtAvgPace);
+            txtAvgPace.setText(str);
+
+            long cal = (long)(60 * totalDistalce * 1.036 ) /1000;
+            str = (""+cal+"大卡");
+            TextView txtCalory = (TextView) findViewById(R.id.txtCalory);
+            txtCalory.setText(str);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public double getDistance(double lat1, double lon1, double lat2, double lon2){
@@ -128,6 +176,7 @@ public class DetailMapActivity extends Activity{
         }
     }
     public void addTrack(JSONArray jsonArray){
+
         double myLat = 0.0, myLng = 0.0;
         List<LatLng> points = new ArrayList<LatLng>();
         LatLng start = null, end = null;

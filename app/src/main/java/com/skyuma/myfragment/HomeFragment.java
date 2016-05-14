@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -132,6 +133,7 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }else {
             adapter.updateAdapterContent(gpsActivities);
         }
+        System.out.println("gpsActivities count:" + gpsActivities.size());
         listView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -241,7 +243,6 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }else{
                 Toast.makeText(getActivity(), "Upload successfully s is empty", Toast.LENGTH_SHORT).show();
             }
-
         }
     }
 
@@ -303,9 +304,16 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         @Override
         protected String doInBackground(Void... params) {
             String result = "";
+            StringBuffer stringBuffer = new StringBuffer();
+            SessionManager session;
+            session = new SessionManager(getActivity().getApplicationContext());
+            HashMap<String, String>  hashMap = session.getUserDetails();
             try {
                 // Simulate network access.
                 String strurl = "http://115.159.188.64:8080/activity/read_activity_list";
+                stringBuffer.append("user_id").append("=").append(hashMap.get("userid"));
+                byte[] data = stringBuffer.toString().getBytes();
+
                 URL url = new URL(strurl);
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                 httpURLConnection.setConnectTimeout(3000);
@@ -314,7 +322,11 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 httpURLConnection.setRequestMethod("GET");
                 httpURLConnection.setUseCaches(false);
                 httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                httpURLConnection.setRequestProperty("Content-Length", String.valueOf(data.length));
+
                 OutputStream outputStream = httpURLConnection.getOutputStream();
+                outputStream.write(data);
+
                 int response = httpURLConnection.getResponseCode();
                 if (response == httpURLConnection.HTTP_OK){
                     InputStream inputStream = httpURLConnection.getInputStream();
@@ -345,17 +357,21 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             showProgress(false);
             try {
                 JSONArray jsonArray = new JSONArray(s);
-                System.out.println(jsonArray.toString());
                 GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
                 for (int i = 0; i < jsonArray.length(); i++){
-                    JSONArray jsonArray1 = jsonArray.getJSONArray(i);
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    int id = jsonObject.getInt("id");
+                    long date = jsonObject.getLong("date");
+                    String name = jsonObject.getString("name");
+                    String zone = jsonObject.getString("zone");
+                    String content  = jsonObject.getString("content");
+
                     GPSActivity gpsActivity = new GPSActivity();
-                    gpsActivity.setName(jsonArray1.getString(1));
-                    gpsActivity.set_datetime(jsonArray1.getLong(2));
-                    gpsActivity.set_timezone(jsonArray1.getString(3));
-                    String content = jsonArray1.getString(4);
+                    gpsActivity.setName(name);
+                    gpsActivity.set_datetime(date);
+                    gpsActivity.set_timezone(zone);
                     gpsdbManager.saveActivity(gpsActivity);
-                    gpsdbManager.saveActivityContent2(gpsActivity.getName(), content);
+                    gpsdbManager.saveActivityContent2(name, content);
                 }
                 setListViewAdapter();
             } catch (JSONException e) {

@@ -162,7 +162,6 @@ public class GPSDBManager {
             Cursor c = db.rawQuery(sql, null);
             while (c.moveToNext()) {
                 count = c.getInt(0);
-                Log.d(LTAG, "saveActivityContent count : " + count);
             }
             c.close();
             if (count > 0){
@@ -174,7 +173,6 @@ public class GPSDBManager {
                     "_speed REAL,_time INTEGER)");
 
             JSONArray jsonArray = new JSONArray(content);
-            System.out.println(jsonArray.toString());
             for (int i = 0; i < jsonArray.length(); i++){
                 JSONArray jsonArray1 = jsonArray.getJSONArray(i);
                 db.execSQL("INSERT INTO " + name +
