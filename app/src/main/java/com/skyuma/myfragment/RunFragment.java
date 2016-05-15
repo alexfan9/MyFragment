@@ -279,8 +279,10 @@ public class RunFragment extends Fragment {
             public void onClick(View v) {
                 if (is_running) {
                     stopRunning();
+                    //stopMyGPSService();
                 } else {
-                    startRunning();
+                    //startRunning();
+                    startMyGPSService();
                 }
             }
         });
@@ -365,7 +367,36 @@ public class RunFragment extends Fragment {
                     .show();
         }
     }
+    protected void  stopMyGPSService(){
+        new AlertDialog.Builder(getActivity())
+                .setTitle("Confirm")
+                .setMessage("Are you sure to stop this activity?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent=new Intent(getActivity(), MyGPSService.class);
+                        getActivity().stopService(intent);
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
 
+
+    }
+    protected void  startMyGPSService(){
+        new AlertDialog.Builder(getActivity())
+                .setTitle("Confirm")
+                .setMessage("Are you sure to start this activity?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(getActivity(), MyGPSService.class);
+                        getActivity().startService(intent);
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
+    }
     protected void startRunning() {
         if (locationManager == null) {
             acquireWakeLock();

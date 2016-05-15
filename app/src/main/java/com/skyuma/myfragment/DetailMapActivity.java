@@ -66,16 +66,18 @@ public class DetailMapActivity extends Activity{
         converter.coord(gps_point);
         LatLng point = converter.convert();
 
-        OverlayOptions options = new DotOptions().center(point).color(0xAAFFff00)
+        OverlayOptions options = new DotOptions().center(point).color(0xFF00CD00)
                 .radius(15);
         int min = (int)(period / 60);
         int sec = (int)(period % 60);
 
-        String strIndex = String.format("%d", index);
         OverlayOptions ooText = new TextOptions().bgColor(0x00000000)
                 .fontSize(24).fontColor(0xFFFF00FF).text(String.format("%d %d:%d", index, min, sec))
                 .position(point);
-        mBaiduMap.addOverlay(ooText);
+        OverlayOptions ooText2 = new TextOptions().bgColor(0x00000000)
+                .fontSize(24).fontColor(0xFF000000).text(String.format("%d", index))
+                .position(point);
+        mBaiduMap.addOverlay(ooText2);
         mBaiduMap.addOverlay(options);
     }
 
@@ -222,7 +224,7 @@ public class DetailMapActivity extends Activity{
     public void drawLine(List<LatLng> points){
         try{
             if (points.size() > 0){
-                OverlayOptions overlayOptions = new PolylineOptions().width(12).color(0xAAFF0000).points(points);
+                OverlayOptions overlayOptions = new PolylineOptions().width(12).color(0xAAFFC125).points(points);
                 mMapView.getMap().addOverlay(overlayOptions);
             }
         }catch (NullPointerException e){
