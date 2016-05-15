@@ -21,6 +21,8 @@
 
     <permisson android:name="android.permission.DEVICE_POWER" />
 
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -47,6 +49,7 @@
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -76,7 +79,8 @@
                 </action>
             </intent-filter>
         </service>
-
+        <service android:name="com.skyuma.myfragment.MyGPSService" />
+        <service android:name="com.skyuma.myfragment.MsgService" />
         <activity
             android:name=".BaseMapDemo"
             android:configChanges="orientation|keyboardHidden"
@@ -136,12 +140,11 @@
             android:label="@string/title_activity_register"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
+        <activity
+            android:name=".TestServiceActivity"
+            android:label="@string/title_activity_test_service"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
     </application>
 
-    <service android:name=".MyGPSService" >
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-    </service>
 </manifest>

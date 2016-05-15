@@ -37,6 +37,9 @@ public class MyGPSService extends Service {
     private PowerManager pm;
     private PowerManager.WakeLock wakeLock;
 
+    public MyGPSService() {
+    }
+
     //private GPSUploadThread myThread;
 
     @Override
@@ -144,6 +147,8 @@ public class MyGPSService extends Service {
         wakeLock.release();
         super.onDestroy();
     }
-
+    public interface OnGPSLocationListener {
+        void onProgress(int progress);
+    }
 }
 

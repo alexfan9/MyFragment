@@ -66,7 +66,10 @@ public class MainActivity extends AppCompatActivity implements OnSettingChangedL
         findViewById(R.id.btnOpenBaiduMap).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, BaiduMapActivity.class);
+                /*Intent intent = new Intent(MainActivity.this, BaiduMapActivity.class);
+                startActivity(intent);
+*/
+                Intent intent = new Intent(MainActivity.this, TestServiceActivity.class);
                 startActivity(intent);
             }
         });
