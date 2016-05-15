@@ -40,7 +40,7 @@ import java.util.Iterator;
  * Use the {@link HomeFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
+public class HomeFragment extends Fragment{
     TextView textView;
     ListView listView;
     private View mProgressView;
@@ -101,14 +101,19 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 android.R.color.holo_red_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_green_light);
+        swipeRefreshLayout.setRefreshing(false);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                textView.setText("Refreshing...");
-                textView.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(true);
-                MyDownloadTask myDownloadTask = new MyDownloadTask();
-                myDownloadTask.execute((Void) null);
+                if (!CheckNetwork.isNetworkAvailable(getActivity())){
+                    Toast.makeText(getActivity(), "网络不可用，请设置网络", Toast.LENGTH_SHORT).show();
+                }else {
+                    textView.setText("Refreshing...");
+                    textView.setVisibility(View.VISIBLE);
+                    swipeRefreshLayout.setRefreshing(true);
+                    MyDownloadTask myDownloadTask = new MyDownloadTask();
+                    myDownloadTask.execute((Void) null);
+                }
             }
         });
         listView = (ListView) rootView.findViewById(R.id.mobile_list);
@@ -117,6 +122,10 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         btnUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!CheckNetwork.isNetworkAvailable(getActivity())){
+                    Toast.makeText(getActivity(), "网络不可用，请设置网络 ", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 showProgress(true);
                 MyUpLoadTask myUpLoadTask = new MyUpLoadTask();
                 myUpLoadTask.execute((Void) null);
@@ -188,14 +197,6 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
         }
-    }
-
-    @Override
-    public void onRefresh() {
-        showProgress(true);
-        swipeRefreshLayout.setRefreshing(true);
-        MyDownloadTask myDownloadTask = new MyDownloadTask();
-        myDownloadTask.execute((Void) null);
     }
 
     public class MyUpLoadTask extends AsyncTask <Void, Void, String>{

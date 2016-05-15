@@ -19,6 +19,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -140,6 +141,10 @@ public class LoginActivity extends AppCompatActivity {
             // form field with an error.
             focusView.requestFocus();
         } else {
+            if (!CheckNetwork.isNetworkAvailable(this)){
+                Toast.makeText(this, "网络不可用，请设置网络 ", Toast.LENGTH_SHORT).show();
+                return;
+            }
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
