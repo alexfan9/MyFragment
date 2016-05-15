@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.DotOptions;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
@@ -16,6 +17,7 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
+import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.utils.CoordinateConverter;
 
@@ -55,7 +57,77 @@ public class DetailMapActivity extends Activity{
         JSONArray jsonArray = gpsdbManager.getActivityContent(strName);
         addTrack(jsonArray);
         setTotalDistance(jsonArray);
+        paceStatistics(jsonArray);
     }
+
+    public void drawPaceItem(LatLng gps_point, int index, long period){
+        CoordinateConverter converter = new CoordinateConverter();
+        converter.from(CoordinateConverter.CoordType.GPS);
+        converter.coord(gps_point);
+        LatLng point = converter.convert();
+
+        OverlayOptions options = new DotOptions().center(point).color(0xAAFFff00)
+                .radius(15);
+        int min = (int)(period / 60);
+        int sec = (int)(period % 60);
+
+        String strIndex = String.format("%d", index);
+        OverlayOptions ooText = new TextOptions().bgColor(0x00000000)
+                .fontSize(24).fontColor(0xFFFF00FF).text(String.format("%d %d:%d", index, min, sec))
+                .position(point);
+        mBaiduMap.addOverlay(ooText);
+        mBaiduMap.addOverlay(options);
+    }
+
+    public void paceStatistics(JSONArray jsonArray){
+        double distance = 0;
+        int index = 1;
+        JSONObject lastObject = null;
+        JSONObject startObject = null;
+        JSONObject endObject = null;
+        JSONObject tempObject = null;
+        int len = jsonArray.length();
+
+        try {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                if (i > 0) {
+                    distance += getDistance(lastObject.getDouble("latitude"),
+                            lastObject.getDouble("longitude"),
+                            jsonObject.getDouble("latitude"),
+                            jsonObject.getDouble("longitude"));
+                }
+                if (i == 0){
+                    startObject = jsonObject;
+                }
+                if (distance > index * 1000) {
+                    endObject = jsonObject;
+                    long period = (endObject.getLong("date") - startObject.getLong("date")) / 1000;
+
+                    LatLng srcLatLng = new LatLng(jsonObject.getDouble("latitude"),
+                            jsonObject.getDouble("longitude"));
+                    drawPaceItem(srcLatLng, index, period);
+                    startObject = jsonObject;
+                    index++;
+                }
+                lastObject = jsonObject;
+                if (i == len -1){
+                    endObject = jsonObject;
+                    long period = (endObject.getLong("date") - startObject.getLong("date")) / 1000;
+                    LatLng srcLatLng = new LatLng(jsonObject.getDouble("latitude"),
+                            jsonObject.getDouble("longitude"));
+                    double l_distance = distance - (index -1 ) * 1000;
+
+                    long tmp = (long)(period * 1000 / l_distance);
+                    drawPaceItem(srcLatLng, index, tmp);
+                }
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     private double meter2km(int meters){
         return Math.round(meters/100d)/10d;
     }
@@ -110,7 +182,6 @@ public class DetailMapActivity extends Activity{
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     public double getDistance(double lat1, double lon1, double lat2, double lon2){
@@ -151,7 +222,7 @@ public class DetailMapActivity extends Activity{
     public void drawLine(List<LatLng> points){
         try{
             if (points.size() > 0){
-                OverlayOptions overlayOptions = new PolylineOptions().width(10).color(0xAAFF0000).points(points);
+                OverlayOptions overlayOptions = new PolylineOptions().width(12).color(0xAAFF0000).points(points);
                 mMapView.getMap().addOverlay(overlayOptions);
             }
         }catch (NullPointerException e){
