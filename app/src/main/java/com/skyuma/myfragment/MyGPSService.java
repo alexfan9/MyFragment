@@ -71,7 +71,9 @@ public class MyGPSService extends Service {
 
         //创建LocationManger对象(LocationMangager，位置管理器。要想操作定位相关设备，必须先定义个LocationManager)
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.addGpsStatusListener(statusLisener);
+        if (checkGpsPermission() == true) {
+            locationManager.addGpsStatusListener(statusLisener);
+        }
     }
 
     public void startGPS(){
@@ -91,7 +93,9 @@ public class MyGPSService extends Service {
     }
 
     public void stopGPS(){
-        locationManager.removeUpdates(locationListener);
+        if (checkGpsPermission() == true) {
+            locationManager.removeUpdates(locationListener);
+        }
     }
 
     @Override
