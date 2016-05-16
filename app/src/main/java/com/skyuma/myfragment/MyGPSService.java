@@ -93,17 +93,15 @@ public class MyGPSService extends Service {
     public void stopGPS(){
         locationManager.removeUpdates(locationListener);
     }
+
     @Override
-    public void onStart(Intent intent, int startId) {
-        // TODO Auto-generated method stub
-        super.onStart(intent, startId);
-        //创建PowerManager对象
+    public int onStartCommand(Intent intent, int flags, int startId) {
         pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         //保持cpu一直运行，不管屏幕是否黑屏
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CPUKeepRunning");
         wakeLock.acquire();
+        return super.onStartCommand(intent, flags, startId);
     }
-
     /**
      * 实现一个位置变化的监听器
      */
