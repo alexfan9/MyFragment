@@ -2,9 +2,11 @@ package com.skyuma.myfragment;
 
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.GpsSatellite;
@@ -14,6 +16,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -49,7 +52,6 @@ public class RunFragment extends Fragment {
     OnSettingChangedListener mCallback = null;
     TextView textView, textViewStatus;
     private Chronometer timer;
-    PowerManager.WakeLock wakeLock = null;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
     JSONArray jsonArray = new JSONArray();
     Location first_location;
@@ -61,7 +63,7 @@ public class RunFragment extends Fragment {
     List<Map<String, Object>> sectionList = new ArrayList<Map<String, Object>>();
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
+    private MyGPSService myGPSService;
     public ArrayList<GPSLocation> getLocationList() {
         return locationList;
     }
@@ -78,37 +80,7 @@ public class RunFragment extends Fragment {
     private int mSatelliteNum;
     private ImageButton imageButtonStart;
     private LocationManager locationManager;
-    private final GpsStatus.Listener statusLisener = new GpsStatus.Listener() {
-        @Override
-        public void onGpsStatusChanged(int event) {
-            if (locationManager != null){
-                int count = 0;
-                GpsStatus status = locationManager.getGpsStatus(null);
-                if (status == null){
-                    return;
-                }
-                if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS){
-                    int maxSatellites = status.getMaxSatellites();
-                    Iterator<GpsSatellite> it = status.getSatellites().iterator();
-                    numSatelliteList.clear();
-                    while (it.hasNext() && count < maxSatellites){
-                        GpsSatellite s = it.next();
-                        numSatelliteList.add(s);
-                        count++;
-                    }
-                    mSatelliteNum = numSatelliteList.size();
-                    if (textView != null){
-                        textView.setText("Satellite number :" + mSatelliteNum + "  count:" + count);
-                    }
-                }else if (event == GpsStatus.GPS_EVENT_STARTED){
 
-
-                }else if (event == GpsStatus.GPS_EVENT_STOPPED){
-
-                }
-            }
-        }
-    };
     private LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
@@ -263,26 +235,16 @@ public class RunFragment extends Fragment {
         timer = (Chronometer)rootView.findViewById(R.id.chronometer);
         timer.setBase(SystemClock.elapsedRealtime());
         numSatelliteList = new ArrayList<GpsSatellite>();
-        acquireWakeLock();
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        if (locationManager == null) {
-            Toast.makeText(getActivity(), "The Location servivce has not start yet.", Toast.LENGTH_SHORT).show();
-        }else{
-            if (checkGpsPermission() == true) {
-                locationManager.addGpsStatusListener(statusLisener);
-            }
-        }
-
+        Intent intent = new Intent(getActivity(), MyGPSService.class);
+        getActivity().bindService(intent, conn, Context.BIND_AUTO_CREATE);
         imageButtonStart = (ImageButton) rootView.findViewById(R.id.imageButtonStart);
         imageButtonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (is_running) {
                     stopRunning();
-                    //stopMyGPSService();
                 } else {
-                    //startRunning();
-                    startMyGPSService();
+                    startRunning();
                 }
             }
         });
@@ -311,103 +273,40 @@ public class RunFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        if (checkGpsPermission() == true) {
-            //locationManager.removeUpdates(locationListener);
-        }
-    }
 
-    //获取电源锁，保持该服务在屏幕熄灭时仍然获取CPU时，保持运行
-    private void acquireWakeLock() {
-        if (null == wakeLock) {
-            PowerManager pm = (PowerManager)getActivity().getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK|PowerManager.ON_AFTER_RELEASE, "PostLocationService");
-            if (null != wakeLock){
-                wakeLock.acquire();
-            }
-        }
-    }
-    //释放设备电源锁
-    private void releaseWakeLock() {
-        if (null != wakeLock){
-            wakeLock.release();
-            wakeLock = null;
-        }
     }
     protected void stopRunning() {
-        if (locationManager != null && locationListener != null) {
-            new AlertDialog.Builder(getActivity())
-                    .setTitle("Confirm")
-                    .setMessage("Are you sure to stop this activity?")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (checkGpsPermission() == true) {
-                                locationManager.removeUpdates(locationListener);
-                                locationManager = null;
-                                releaseWakeLock();
-                                is_running = false;
-                                imageButtonStart.setImageResource(R.drawable.start_selector);
-                                textView.setText("GPS Stop");
-                                timer.setBase(SystemClock.elapsedRealtime());
-                                timer.stop();
-                                if (jsonArray != null) {
-
-                                    if (jsonArray.length() >= 5) {
-                                        gpsdbManager.createActivity("activity");
-                                        mCallback.OnSettingChanged();
-                                    } else {
-                                        Toast.makeText(getActivity(), "距离太短,此次活动将不被保存.", Toast.LENGTH_SHORT).show();
-                                    }
-                                    jsonArray = null;
-                                }
-                            }
-                        }
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
-        }
-    }
-    protected void  stopMyGPSService(){
         new AlertDialog.Builder(getActivity())
                 .setTitle("Confirm")
                 .setMessage("Are you sure to stop this activity?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent intent=new Intent(getActivity(), MyGPSService.class);
-                        getActivity().stopService(intent);
+                        if (checkGpsPermission() == true) {
+                            myGPSService.stopGPS();
+                            is_running = false;
+                            imageButtonStart.setImageResource(R.drawable.start_selector);
+                            textView.setText("GPS Stop");
+                            timer.setBase(SystemClock.elapsedRealtime());
+                            timer.stop();
+                            if (jsonArray != null) {
+
+                                if (jsonArray.length() >= 5) {
+                                    gpsdbManager.createActivity("activity");
+                                    mCallback.OnSettingChanged();
+                                } else {
+                                    Toast.makeText(getActivity(), "距离太短,此次活动将不被保存.", Toast.LENGTH_SHORT).show();
+                                }
+                                jsonArray = null;
+                            }
+                        }
                     }
                 })
                 .setNegativeButton("No", null)
                 .show();
-
-
     }
-    protected void  startMyGPSService(){
-        new AlertDialog.Builder(getActivity())
-                .setTitle("Confirm")
-                .setMessage("Are you sure to start this activity?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(getActivity(), MyGPSService.class);
-                        getActivity().startService(intent);
-                    }
-                })
-                .setNegativeButton("No", null)
-                .show();
-    }
+
     protected void startRunning() {
-        if (locationManager == null) {
-            acquireWakeLock();
-            locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        }
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == false) {
-            Toast.makeText(getActivity(), "The GPS is off, please switch on.", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivityForResult(intent, 0);
-        }
-        setupCriteria();
         new AlertDialog.Builder(getActivity())
                 .setTitle("Confirm")
                 .setMessage("Are you sure to start this activity?")
@@ -415,7 +314,7 @@ public class RunFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (checkGpsPermission() == true) {
-                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
+                            myGPSService.startGPS();
                             is_running = true;
                             imageButtonStart.setImageResource(R.drawable.stop_selector);
                             textView.setText("GPS Start");
@@ -430,6 +329,142 @@ public class RunFragment extends Fragment {
                 .setNegativeButton("No", null)
                 .show();
     }
+    ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
 
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            //返回一个MsgService对象
+            myGPSService = ((MyGPSService.MsgBinder)service).getService();
+            //注册回调接口来接收下载进度的变化
+            myGPSService.setOnGPSLocationListener(new MyGPSService.OnGPSLocationListener() {
+                @Override
+                public void onGpsStatusChanged(int event, GpsStatus status) {
+                    int count = 0;
+                    if (status == null){
+                        return;
+                    }
+                    if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS){
+                        int maxSatellites = status.getMaxSatellites();
+                        Iterator<GpsSatellite> it = status.getSatellites().iterator();
+                        numSatelliteList.clear();
+                        while (it.hasNext() && count < maxSatellites){
+                            GpsSatellite s = it.next();
+                            numSatelliteList.add(s);
+                            count++;
+                        }
+                        mSatelliteNum = numSatelliteList.size();
+                        if (textView != null){
+                            textView.setText("Satellite number :" + mSatelliteNum + "  count:" + count);
+                        }
+                    }else if (event == GpsStatus.GPS_EVENT_STARTED){
+
+
+                    }else if (event == GpsStatus.GPS_EVENT_STOPPED){
+
+                    }
+                }
+
+                @Override
+                public void onLocationChanged(Location location) {
+                    GPSLocation gpsLocation = new GPSLocation();
+                    gpsLocation.setLantitude(location.getLatitude());
+                    gpsLocation.setLongitude(location.getLongitude());
+                    gpsLocation.setAltitude(location.getAltitude());
+                    gpsLocation.setTime(location.getTime());
+                    gpsLocation.setSpeed(location.getSpeed());
+                    if (gpsdbManager != null){
+                        gpsdbManager.add(gpsLocation);
+                    }
+                    if (jsonArray == null){
+                        jsonArray = new JSONArray();
+                    }
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("latitude", location.getLatitude());
+                        jsonObject.put("longitude", location.getLongitude());
+                        jsonObject.put("altitude", location.getAltitude());
+                        jsonObject.put("speed", location.getSpeed());
+                        jsonObject.put("date", location.getTime());
+                        jsonArray.put(jsonObject);
+                    } catch (JSONException e){
+                        e.printStackTrace();
+                    }
+
+                    String latLongString;
+                    if (location != null) {
+                        if (last_location != null){
+                            double temp = getDistance(last_location.getLatitude(), last_location.getLongitude(), location.getLatitude(), location.getLongitude());
+                            distance += temp;
+                            tmp_distance += temp;
+                        }
+                        if (first_location == null){
+                            first_location = location;
+                        }
+
+                        double lat = location.getLatitude();
+                        double lng = location.getLongitude();
+                        float spe = location.getSpeed();// 速度
+                        float pace = 1000/spe;
+                        int min = (int)(pace / 60);
+                        int sec = (int)(pace % 60);
+                        float acc = location.getAccuracy();// 精度
+                        double alt = location.getAltitude();// 海拔
+                        float bea = location.getBearing();// 轴承
+                        long tim = location.getTime();// 返回UTC时间1970年1月1毫秒
+                        float cal = (float)(60 * distance * 1.036 ) /1000;
+
+                        latLongString = "纬度:" + lat + "\n经度:" + lng + "\n精度：" + acc
+                                + "\n速度：" + spe + "\n海拔：" + alt + "\n轴承：" + bea
+                                + "\n点数：" + jsonArray.length()
+                                + "\n距离：" + (int)distance + " 米"
+                                + "\n当前配速：" + min + "分" + sec + "秒"
+                                + "\n卡路里：" + cal
+                                + "\n时间："+ sdf.format(tim);
+
+                        MainActivity activity = (MainActivity) getActivity();
+                        PaceFragment paceFragment = (PaceFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(1);
+                        MapFragment mapFragment = (MapFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(2);
+                        mapFragment.setCurrentLocation(location);
+                        if (tmp_distance >= 1000){
+                            long section_time = location.getTime() - tmp_location.getTime();
+                            long total_time = location.getTime() - first_location.getTime();
+                            tmp_location = location;
+                            Map<String, Object> item = new HashMap<String, Object>();
+                            item.put("total_time", total_time);
+                            item.put("section_time", section_time);
+                            sectionList.add(item);
+                            paceFragment.updateAdapter(sectionList);
+                            tmp_distance = 0;
+                        }
+                        last_location = location;
+                        tmp_location = location;
+                        paceFragment.textView.setText("距离：" + (float) (distance /1000) + " 千米");
+                    } else {
+                        latLongString = "无法获取位置信息";
+                    }
+                    textViewStatus.setText("您当前的位置是:\n" + latLongString);
+                }
+
+                @Override
+                public void onProviderDisabled(String provider) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String provider) {
+
+                }
+
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                }
+            });
+        }
+    };
 
 }

@@ -9,14 +9,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.content.ContextCompat;
+
+import java.util.Iterator;
 
 /**
  * 获取gps位置信息的service
@@ -33,7 +38,17 @@ public class MyGPSService extends Service {
     Context context;
 
     private LocationManager locationManager;
-
+    private final GpsStatus.Listener statusLisener = new GpsStatus.Listener() {
+        @Override
+        public void onGpsStatusChanged(int event) {
+            GpsStatus status = locationManager.getGpsStatus(null);
+            onGPSLocationListener.onGpsStatusChanged(event, status);
+        }
+    };
+    private OnGPSLocationListener onGPSLocationListener;
+    public void setOnGPSLocationListener(OnGPSLocationListener onGPSLocationListener) {
+        this.onGPSLocationListener = onGPSLocationListener;
+    }
     private PowerManager pm;
     private PowerManager.WakeLock wakeLock;
 
@@ -41,12 +56,6 @@ public class MyGPSService extends Service {
     }
 
     //private GPSUploadThread myThread;
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     protected boolean checkGpsPermission(){
         if (Build.VERSION.SDK_INT>=23 &&
@@ -62,31 +71,28 @@ public class MyGPSService extends Service {
 
         //创建LocationManger对象(LocationMangager，位置管理器。要想操作定位相关设备，必须先定义个LocationManager)
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        //利用Criteria选择最优的位置服务
+        locationManager.addGpsStatusListener(statusLisener);
+    }
+
+    public void startGPS(){
+        if (locationManager == null){
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        }
         Criteria criteria = new Criteria();
-        //设置定位精确度 Criteria.ACCURACY_COARSE比较粗略，Criteria.ACCURACY_FINE则比较精细
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        //设置是否需要海拔信息
         criteria.setAltitudeRequired(false);
-        //设置是否需要方位信息
         criteria.setBearingRequired(false);
-        // 设置是否允许运营商收费
         criteria.setCostAllowed(true);
-        // 设置对电源的需求
         criteria.setPowerRequirement(Criteria.POWER_LOW);
-        //获取最符合要求的provider
         String provider = locationManager.getBestProvider(criteria, true);
-        //绑定监听，有4个参数
-        //参数1，设备：有GPS_PROVIDER和NETWORK_PROVIDER两种
-        //参数2，位置信息更新周期，单位毫秒
-        //参数3，位置变化最小距离：当位置距离变化超过此值时，将更新位置信息
-        //参数4，监听
-        //备注：参数2和3，如果参数3不为0，则以参数3为准；参数3为0，则通过时间来定时更新；两者为0，则随时刷新
         if (checkGpsPermission() == true) {
             locationManager.requestLocationUpdates(provider, 10000, 10, locationListener);// 2000,10
         }
     }
 
+    public void stopGPS(){
+        locationManager.removeUpdates(locationListener);
+    }
     @Override
     public void onStart(Intent intent, int startId) {
         // TODO Auto-generated method stub
@@ -105,36 +111,51 @@ public class MyGPSService extends Service {
 
         @Override
         public void onLocationChanged(Location location) {
-            // TODO Auto-generated method stub
-
-            /**
-             * 此处实现定位上传功能
-             */
+            if(onGPSLocationListener != null){
+                onGPSLocationListener.onLocationChanged(location);
+            }
         }
 
         // 当位置信息不可获取时
         @Override
         public void onProviderDisabled(String provider) {
-            // TODO Auto-generated method stub
-            /**
-             *
-             */
+            if(onGPSLocationListener != null){
+                onGPSLocationListener.onProviderDisabled(provider);
+            }
         }
 
         @Override
         public void onProviderEnabled(String provider) {
-            // TODO Auto-generated method stub
-
+            if(onGPSLocationListener != null){
+                onGPSLocationListener.onProviderEnabled(provider);
+            }
         }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-            // TODO Auto-generated method stub
-
+            if(onGPSLocationListener != null){
+                onGPSLocationListener.onStatusChanged(provider, status, extras);
+            }
         }
 
     };
+    /**
+     * 返回一个Binder对象
+     */
+    @Override
+    public IBinder onBind(Intent intent) {
+        return new MsgBinder();
+    }
 
+    public class MsgBinder extends Binder {
+        /**
+         * 获取当前Service的实例
+         * @return
+         */
+        public MyGPSService getService(){
+            return MyGPSService.this;
+        }
+    }
     @Override
     public void onDestroy() {
         // TODO Auto-generated method stub
@@ -148,7 +169,11 @@ public class MyGPSService extends Service {
         super.onDestroy();
     }
     public interface OnGPSLocationListener {
-        void onProgress(int progress);
+        void onGpsStatusChanged(int event, GpsStatus status);
+        void onLocationChanged(Location location);
+        void onProviderDisabled(String provider);
+        void onProviderEnabled(String provider);
+        void onStatusChanged(String provider, int status, Bundle extras);
     }
 }
 
