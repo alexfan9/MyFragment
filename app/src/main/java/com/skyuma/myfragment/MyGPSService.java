@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
-import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
@@ -21,8 +20,6 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.content.ContextCompat;
 
-import java.util.Iterator;
-
 /**
  * 获取gps位置信息的service
  *
@@ -31,7 +28,11 @@ import java.util.Iterator;
  */
 public class MyGPSService extends Service {
 
-    public MyGPSService(Context context) {
+    public Context getContext() {
+        return context;
+    }
+
+    public void setContext(Context context) {
         this.context = context;
     }
 
@@ -75,20 +76,22 @@ public class MyGPSService extends Service {
             locationManager.addGpsStatusListener(statusLisener);
         }
     }
-
-    public void startGPS(){
-        if (locationManager == null){
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        }
+    protected void setupCriteria() {
         Criteria criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
         criteria.setAltitudeRequired(false);
         criteria.setBearingRequired(false);
         criteria.setCostAllowed(true);
         criteria.setPowerRequirement(Criteria.POWER_LOW);
-        String provider = locationManager.getBestProvider(criteria, true);
+    }
+    public void startGPS(){
+        if (locationManager == null){
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        }
+
+        setupCriteria();
         if (checkGpsPermission() == true) {
-            locationManager.requestLocationUpdates(provider, 10000, 10, locationListener);// 2000,10
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
         }
     }
 
