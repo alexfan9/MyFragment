@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.skyuma.myfragment.StatisticsActivity">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="轨迹"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:layout_weight="1"
+            android:id="@+id/textViewTrack" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="配速"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:layout_weight="1"
+            android:id="@+id/textViewStsPace" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="详情"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:layout_weight="1"
+            android:id="@+id/textViewDetail" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="图表"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:layout_weight="1"
+            android:id="@+id/textViewChart" />
+    </LinearLayout>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:layout_gravity="center"
+        android:src="@android:drawable/button_onoff_indicator_on"
+        android:id="@+id/statisticsImageView" />
+    <android.support.v4.view.ViewPager
+        android:id="@+id/statisticsViewpager"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:flipInterval = "30"
+        android:persistentDrawingCache="animation"/>
+</LinearLayout>

@@ -18,10 +18,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <permisson android:name="android.permission.DEVICE_POWER" />
-
-
 
     <application
         android:allowBackup="true"
@@ -79,8 +78,9 @@
                 </action>
             </intent-filter>
         </service>
-        <service android:name="com.skyuma.myfragment.MyGPSService" />
-        <service android:name="com.skyuma.myfragment.MsgService" />
+        <service android:name=".MyGPSService" />
+        <service android:name=".MsgService" />
+
         <activity
             android:name=".BaseMapDemo"
             android:configChanges="orientation|keyboardHidden"
@@ -143,6 +143,11 @@
         <activity
             android:name=".TestServiceActivity"
             android:label="@string/title_activity_test_service"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
+        <activity
+            android:name=".StatisticsActivity"
+            android:label="@string/title_activity_statistics"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
     </application>

@@ -39,6 +39,7 @@ public class DetailMapActivity extends Activity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
         String strName = b.getString("name");
