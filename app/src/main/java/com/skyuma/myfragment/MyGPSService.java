@@ -85,6 +85,11 @@ public class MyGPSService extends Service {
         criteria.setCostAllowed(true);
         criteria.setPowerRequirement(Criteria.POWER_LOW);
     }
+    public void makeVibration(long milliseconds){
+        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        vibrator.vibrate(milliseconds);
+    }
+
     public void startGPS(){
         if (locationManager == null){
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -95,18 +100,17 @@ public class MyGPSService extends Service {
             //保持cpu一直运行，不管屏幕是否黑屏
             wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CPUKeepRunning");
             wakeLock.acquire();
-            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-            vibrator.vibrate(2000);//震动2s
+            makeVibration(1000);//震动1s
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
         }
     }
+
 
     public void stopGPS(){
         if (checkGpsPermission() == true) {
             locationManager.removeUpdates(locationListener);
             wakeLock.release();
-            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-            vibrator.vibrate(2000);//震动2s
+            makeVibration(1000);//震动1s
         }
     }
 
@@ -118,6 +122,7 @@ public class MyGPSService extends Service {
         wakeLock.acquire();
         return super.onStartCommand(intent, flags, startId);
     }
+
     /**
      * 实现一个位置变化的监听器
      */

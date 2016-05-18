@@ -311,6 +311,7 @@ public class RunFragment extends Fragment {
                         mapFragment.setCurrentLocation(location);
 
                         if (distance > index * 1000) {
+                            myGPSService.makeVibration(1000);
                             index++;
                         }
                         if (tmp_distance >= 1000){
