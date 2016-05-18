@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.Vibrator;
 import android.support.v4.content.ContextCompat;
 
 /**
@@ -88,9 +89,14 @@ public class MyGPSService extends Service {
         if (locationManager == null){
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         }
-
         setupCriteria();
         if (checkGpsPermission() == true) {
+            pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            //保持cpu一直运行，不管屏幕是否黑屏
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CPUKeepRunning");
+            wakeLock.acquire();
+            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            vibrator.vibrate(2000);//震动2s
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
         }
     }
@@ -98,6 +104,9 @@ public class MyGPSService extends Service {
     public void stopGPS(){
         if (checkGpsPermission() == true) {
             locationManager.removeUpdates(locationListener);
+            wakeLock.release();
+            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            vibrator.vibrate(2000);//震动2s
         }
     }
 

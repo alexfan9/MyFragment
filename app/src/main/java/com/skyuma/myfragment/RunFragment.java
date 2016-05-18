@@ -13,6 +13,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,8 @@ import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.baidu.mapapi.model.LatLng;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -140,6 +143,7 @@ public class RunFragment extends Fragment {
                 }
             }
         });
+
         gpsdbManager = new GPSDBManager(getActivity());
         return rootView;
     }
@@ -158,6 +162,7 @@ public class RunFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         myGPSService.stopGPS();
+                        index = 0;
                         is_running = false;
                         imageButtonStart.setImageResource(R.drawable.start_selector);
                         textView.setText("GPS Stop");
@@ -187,6 +192,9 @@ public class RunFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         myGPSService.startGPS();
+
+                        index = 1;
+                        first_location = null;
                         is_running = true;
                         imageButtonStart.setImageResource(R.drawable.stop_selector);
                         textView.setText("GPS Start");
@@ -301,6 +309,10 @@ public class RunFragment extends Fragment {
                         PaceFragment paceFragment = (PaceFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(1);
                         MapFragment mapFragment = (MapFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(2);
                         mapFragment.setCurrentLocation(location);
+
+                        if (distance > index * 1000) {
+                            index++;
+                        }
                         if (tmp_distance >= 1000){
                             long section_time = location.getTime() - tmp_location.getTime();
                             long total_time = location.getTime() - first_location.getTime();
