@@ -1,6 +1,5 @@
 package com.skyuma.myfragment;
 
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -17,6 +16,7 @@ import com.baidu.mapapi.map.DotOptions;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
@@ -44,56 +44,63 @@ public class MapFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    public Location getCurrentLocation() {
-        return currentLocation;
-    }
+    public void drawLine(JSONArray jsonArray){
 
-    public void setCurrentLocation(Location currentLocation) {
-        this.currentLocation = currentLocation;
-        if (mBaiduMap != null) {
-            CoordinateConverter converter = new CoordinateConverter();
-            converter.from(CoordinateConverter.CoordType.GPS);
-            LatLng srcLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-            converter.coord(srcLatLng);
-            LatLng point = converter.convert();
-            MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(point, 18);
-            mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
+        double myLat = 0.0, myLng = 0.0;
+        List<LatLng> points = new ArrayList<LatLng>();
+        LatLng start = null, end = null;
+        CoordinateConverter converter = new CoordinateConverter();
+        converter.from(CoordinateConverter.CoordType.GPS);
+        if (jsonArray.length() < 2 ){
+            return;
+        }
+        for (int i = 0; i < jsonArray.length(); i++){
+            try {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                LatLng srcLatLng = new LatLng(jsonObject.getDouble("latitude"),
+                        jsonObject.getDouble("longitude"));
+                converter.coord(srcLatLng);
+                LatLng point = converter.convert();
+                points.add(point);
+                if (i == 0){
+                    start = point;
+                }else if (i == jsonArray.length() -1){
+                    end = point;
+                }
+                myLat += point.latitude;
+                myLng += point.longitude;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try{
+            mBaiduMap.clear();
+            OverlayOptions overlayOptions = new PolylineOptions().width(12).color(0xAAFFC125).points(points);
+            mBaiduMap.addOverlay(overlayOptions);
+
+            BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.icon_marka);
+            MarkerOptions markerOptions = new MarkerOptions().position(start).icon(bitmapDescriptor).zIndex(9).draggable(true);
+            mBaiduMap.addOverlay(markerOptions);
+
+            mCurrentMode = MyLocationConfiguration.LocationMode.FOLLOWING;
             mCurrentMarker = BitmapDescriptorFactory
                     .fromResource(R.drawable.icon_geo);
             mBaiduMap.setMyLocationConfigeration(new MyLocationConfiguration(
                     mCurrentMode, true, mCurrentMarker,
                     accuracyCircleFillColor, accuracyCircleStrokeColor));
+
+            MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(end, 18);
             mBaiduMap.animateMapStatus(u);
-            OverlayOptions options = new DotOptions().center(point).color(0xAA00ff00)
+
+            OverlayOptions options = new DotOptions().center(end).color(0xAA00ff00)
                     .radius(10);
             mBaiduMap.addOverlay(options);
+        }catch (NullPointerException e){
+            e.printStackTrace();
         }
     }
 
-    public void updateLocation(Location currentLocation, JSONArray jsonArray){
-        setCurrentLocation(currentLocation);
-        CoordinateConverter converter = new CoordinateConverter();
-        converter.from(CoordinateConverter.CoordType.GPS);
-        List<LatLng> points = new ArrayList<LatLng>();
-        for (int i = 0; i < jsonArray.length(); i++){
-            try {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                LatLng srcLatLng = new LatLng(jsonObject.getDouble("latitude"), jsonObject.getDouble("longitude"));
-                converter.coord(srcLatLng);
-                LatLng point = converter.convert();
-                points.add(point);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        OverlayOptions ooPolyline = new PolylineOptions().width(10)
-                .color(0xAAFF0000).points(points);
-        if (mBaiduMap != null) {
-            mBaiduMap.addOverlay(ooPolyline);
-        }
-    }
-
-    Location currentLocation = null;
     // 定位相关
     LocationClient mLocClient;
     private MyLocationConfiguration.LocationMode mCurrentMode;

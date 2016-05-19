@@ -29,6 +29,7 @@ import android.support.v4.content.ContextCompat;
  */
 public class MyGPSService extends Service {
 
+    GPSDBManager gpsdbManager;
     public Context getContext() {
         return context;
     }
@@ -130,6 +131,17 @@ public class MyGPSService extends Service {
 
         @Override
         public void onLocationChanged(Location location) {
+            GPSLocation gpsLocation = new GPSLocation();
+            gpsLocation.setLantitude(location.getLatitude());
+            gpsLocation.setLongitude(location.getLongitude());
+            gpsLocation.setAltitude(location.getAltitude());
+            gpsLocation.setTime(location.getTime());
+            gpsLocation.setSpeed(location.getSpeed());
+            if (gpsdbManager == null){
+                gpsdbManager = new GPSDBManager(context);
+            }
+            gpsdbManager.add(gpsLocation);
+
             if(onGPSLocationListener != null){
                 onGPSLocationListener.onLocationChanged(location);
             }

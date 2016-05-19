@@ -28,7 +28,6 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -205,6 +204,26 @@ public class RunFragment extends Fragment {
                 .setNegativeButton("No", null)
                 .show();
     }
+
+    public double getTotalDistance(JSONArray jsonArray){
+        double distance = 0;
+        JSONObject lastObject = null;
+        try {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                if (i > 0) {
+                    distance += getDistance(lastObject.getDouble("latitude"),
+                            lastObject.getDouble("longitude"),
+                            jsonObject.getDouble("latitude"),
+                            jsonObject.getDouble("longitude"));
+                }
+                lastObject = jsonObject;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return distance;
+    }
     ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceDisconnected(ComponentName name) {
@@ -247,41 +266,11 @@ public class RunFragment extends Fragment {
 
                 @Override
                 public void onLocationChanged(Location location) {
-                    GPSLocation gpsLocation = new GPSLocation();
-                    gpsLocation.setLantitude(location.getLatitude());
-                    gpsLocation.setLongitude(location.getLongitude());
-                    gpsLocation.setAltitude(location.getAltitude());
-                    gpsLocation.setTime(location.getTime());
-                    gpsLocation.setSpeed(location.getSpeed());
-                    if (gpsdbManager != null){
-                        gpsdbManager.add(gpsLocation);
-                    }
-                    if (jsonArray == null){
-                        jsonArray = new JSONArray();
-                    }
-                    JSONObject jsonObject = new JSONObject();
-                    try {
-                        jsonObject.put("latitude", location.getLatitude());
-                        jsonObject.put("longitude", location.getLongitude());
-                        jsonObject.put("altitude", location.getAltitude());
-                        jsonObject.put("speed", location.getSpeed());
-                        jsonObject.put("date", location.getTime());
-                        jsonArray.put(jsonObject);
-                    } catch (JSONException e){
-                        e.printStackTrace();
-                    }
 
+                    JSONArray jsonArray = gpsdbManager.getActivityContent("activity");
+                    distance = getTotalDistance(jsonArray);
                     String latLongString;
                     if (location != null) {
-                        if (last_location != null){
-                            double temp = getDistance(last_location.getLatitude(), last_location.getLongitude(), location.getLatitude(), location.getLongitude());
-                            distance += temp;
-                            tmp_distance += temp;
-                        }
-                        if (first_location == null){
-                            first_location = location;
-                        }
-
                         double lat = location.getLatitude();
                         double lng = location.getLongitude();
                         float spe = location.getSpeed();// 速度
@@ -305,25 +294,13 @@ public class RunFragment extends Fragment {
                         MainActivity activity = (MainActivity) getActivity();
                         PaceFragment paceFragment = (PaceFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(1);
                         MapFragment mapFragment = (MapFragment) ((RunViewPagerFragment) activity.runViewFragment).getFragmentList().get(2);
-                        mapFragment.setCurrentLocation(location);
-
+                        //mapFragment.setCurrentLocation(location);
+                        mapFragment.drawLine(jsonArray);
                         if (distance > index * 1000) {
                             myGPSService.makeVibration(1000);
                             index++;
                         }
-                        if (tmp_distance >= 1000){
-                            long section_time = location.getTime() - tmp_location.getTime();
-                            long total_time = location.getTime() - first_location.getTime();
-                            tmp_location = location;
-                            Map<String, Object> item = new HashMap<String, Object>();
-                            item.put("total_time", total_time);
-                            item.put("section_time", section_time);
-                            sectionList.add(item);
-                            paceFragment.updateAdapter(sectionList);
-                            tmp_distance = 0;
-                        }
-                        last_location = location;
-                        tmp_location = location;
+
                         paceFragment.textView.setText("距离：" + (float) (distance /1000) + " 千米");
                     } else {
                         latLongString = "无法获取位置信息";
