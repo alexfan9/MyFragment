@@ -44,7 +44,7 @@ public class RunFragment extends Fragment {
     TextView textView, textViewStatus;
     private Chronometer timer;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
-    JSONArray jsonArray = new JSONArray();
+    JSONArray jsonArray;
     Location first_location;
     Location last_location;
     Location tmp_location;
@@ -267,7 +267,7 @@ public class RunFragment extends Fragment {
                 @Override
                 public void onLocationChanged(Location location) {
 
-                    JSONArray jsonArray = gpsdbManager.getActivityContent("activity");
+                    jsonArray = gpsdbManager.getActivityContent("activity");
                     distance = getTotalDistance(jsonArray);
                     String latLongString;
                     if (location != null) {
