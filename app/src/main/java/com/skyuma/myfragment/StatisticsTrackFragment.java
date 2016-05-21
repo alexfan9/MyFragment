@@ -2,6 +2,7 @@ package com.skyuma.myfragment;
 
 
 import android.app.Fragment;
+import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -22,14 +23,13 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.utils.CoordinateConverter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -37,16 +37,18 @@ import java.util.List;
  * A simple {@link Fragment} subclass.
  */
 public class StatisticsTrackFragment extends Fragment {
-
+    Context context;
     Bundle bundle;
     private MapView mMapView;
     private BaiduMap mBaiduMap;
     View rootView;
+    MapUtils mapUtils = null;
     public StatisticsTrackFragment() {
         // Required empty public constructor
     }
-    public static StatisticsTrackFragment newInstance(Bundle bundle) {
+    public static StatisticsTrackFragment newInstance(Context context, Bundle bundle) {
         StatisticsTrackFragment fragment = new StatisticsTrackFragment();
+        fragment.context = context;
         fragment.bundle = bundle;
         return fragment;
     }
@@ -65,19 +67,14 @@ public class StatisticsTrackFragment extends Fragment {
         TextView textView = (TextView) rootView.findViewById(R.id.statisticsDetailTitle);
         textView.setText(simpleDateFormat.format(bundle.getLong("datetime")) + " " + bundle.getString("timezone"));
 
-        GPSDBManager gpsdbManager = new GPSDBManager(getActivity());
-        JSONArray jsonArray = gpsdbManager.getActivityContent(bundle.getString("name"));
-        addTrack(jsonArray);
-        setTotalDistance(jsonArray);
-        paceStatistics(jsonArray);
+        mapUtils = MapUtils.getInstance(context, bundle.getString("name"));
+        addTrack();
+        setTotalDistance();
+        drawPaceItems();
+
         return rootView;
     }
-    public void drawPaceItem(LatLng gps_point, int index, long period){
-        CoordinateConverter converter = new CoordinateConverter();
-        converter.from(CoordinateConverter.CoordType.GPS);
-        converter.coord(gps_point);
-        LatLng point = converter.convert();
-
+    public void drawPaceItem(LatLng point, int index, long period){
         OverlayOptions options = new DotOptions().center(point).color(0xFF00CD00)
                 .radius(15);
         int min = (int)(period / 60);
@@ -93,6 +90,16 @@ public class StatisticsTrackFragment extends Fragment {
         mBaiduMap.addOverlay(options);
     }
 
+    public void drawPaceItems(){
+        List<MapUtils.PaceItem> paceItems = mapUtils.getPaceItems();
+        MapUtils.PaceItem  paceItem = null;
+        Iterator<MapUtils.PaceItem> iterator=paceItems.iterator();
+        while(iterator.hasNext()){
+            paceItem = iterator.next();
+            drawPaceItem(paceItem.getPoint(), paceItem.getIndex(), paceItem.getPeriod());
+        }
+
+    }
     public void paceStatistics(JSONArray jsonArray){
         double distance = 0;
         int index = 1;
@@ -135,7 +142,6 @@ public class StatisticsTrackFragment extends Fragment {
                     long tmp = (long)(period * 1000 / l_distance);
                     drawPaceItem(srcLatLng, index, tmp);
                 }
-
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -145,57 +151,60 @@ public class StatisticsTrackFragment extends Fragment {
     private double meter2km(int meters){
         return Math.round(meters/100d)/10d;
     }
-    public void setTotalDistance(JSONArray jsonArray){
-        double totalDistalce = getTotalDistance(jsonArray);
-        TextView textViewDistance = (TextView) rootView.findViewById(R.id.txtDistance);
-        textViewDistance.setText(meter2km((int) totalDistalce) + "公里");
+    private String getPeriodString(long period){
+        String str = "";
+        int usec = 1;
+        int umin = usec * 60 ;
+        int uhour = umin * 60;
+        int uday = uhour * 24;
 
-        int len = jsonArray.length();
-        try {
-            JSONObject first = jsonArray.getJSONObject(0);
-            JSONObject last = jsonArray.getJSONObject(len -1);
-            long period = (last.getLong("date") - first.getLong("date"))/1000;
-            int usec = 1;
-            int umin = usec * 60 ;
-            int uhour = umin * 60;
-            int uday = uhour * 24;
+        long days = period / uday;
+        long hours = (period % uday) /uhour;
+        long miniutes = (period % uhour) /umin;
+        long seconds = period % umin;
 
-            long days = period / uday;
-            long hours = (period % uday) /uhour;
-            long miniutes = (period % uhour) /umin;
-            long seconds = period % umin;
-
-            String str = "";
-            if (days > 0){
-                str = (""+days+"天"+hours+"小时"+miniutes+"分"+seconds+"秒");
-            }else if (hours > 0){
-                str = (""+ hours+"小时"+miniutes+"分"+seconds+"秒");
-            }else if (miniutes > 0){
-                str = (""+miniutes+"分"+seconds+"秒");
-            }else{
-                str = (""+seconds+"秒");
-            }
-
-            float spe = (float)(totalDistalce / period);
-            float pace = 1000/spe;
-            int min = (int)(pace / 60);
-            int sec = (int)(pace % 60);
-
-            TextView txtLastTime = (TextView) rootView.findViewById(R.id.txtLastTime);
-            txtLastTime.setText(str);
-
-            str = (""+min+"分"+sec+"秒");
-            TextView txtAvgPace = (TextView) rootView.findViewById(R.id.txtAvgPace);
-            txtAvgPace.setText(str);
-
-            long cal = (long)(60 * totalDistalce * 1.036 ) /1000;
-            str = (""+cal+"大卡");
-            TextView txtCalory = (TextView) rootView.findViewById(R.id.txtCalory);
-            txtCalory.setText(str);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (days > 0){
+            str = (""+days+"天"+hours+"小时"+miniutes+"分"+seconds+"秒");
+        }else if (hours > 0){
+            str = (""+ hours+"小时"+miniutes+"分"+seconds+"秒");
+        }else if (miniutes > 0){
+            str = (""+miniutes+"分"+seconds+"秒");
+        }else{
+            str = (""+seconds+"秒");
         }
+        return str;
+    }
+    private String getAvgPaceString(double distance, long period){
+        String str = "";
+        float spe = (float)(distance / period);
+        float pace = 1000/spe;
+        int min = (int)(pace / 60);
+        int sec = (int)(pace % 60);
+        str = String.format("%d分%02d 秒", min, sec);
+        return str;
+    }
+
+    private String getCaloryString(double distance){
+        String str = "";
+        long cal = (long)(60 * distance * 1.036 ) /1000;
+        str = (""+cal+"大卡");
+        return str;
+    }
+    public void setTotalDistance(){
+        double distance = mapUtils.getTotalDistance();
+        long period = mapUtils.getPeriod();
+
+        TextView textViewDistance = (TextView) rootView.findViewById(R.id.txtDistance);
+        textViewDistance.setText(meter2km((int) distance) + "公里");
+
+        TextView txtLastTime = (TextView) rootView.findViewById(R.id.txtLastTime);
+        txtLastTime.setText(getPeriodString(period));
+
+        TextView txtAvgPace = (TextView) rootView.findViewById(R.id.txtAvgPace);
+        txtAvgPace.setText(getAvgPaceString(distance, period));
+
+        TextView txtCalory = (TextView) rootView.findViewById(R.id.txtCalory);
+        txtCalory.setText(getCaloryString(distance));
     }
 
     public double getDistance(double lat1, double lon1, double lat2, double lon2){
@@ -224,15 +233,11 @@ public class StatisticsTrackFragment extends Fragment {
         return distance;
     }
 
-    public void drawStart(LatLng point, int resId){
-        try{
-            BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromResource(resId);
-            MarkerOptions markerOptions = new MarkerOptions().position(point).icon(bitmapDescriptor).zIndex(9).draggable(true);
-            if (mBaiduMap != null) {
-                mBaiduMap.addOverlay(markerOptions);
-            }
-        }catch (NullPointerException e){
-            e.printStackTrace();
+    public void drawPoint(LatLng point, int resId){
+        BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromResource(resId);
+        MarkerOptions markerOptions = new MarkerOptions().position(point).icon(bitmapDescriptor).zIndex(9).draggable(true);
+        if (mBaiduMap != null) {
+            mBaiduMap.addOverlay(markerOptions);
         }
     }
     public void drawLine(List<LatLng> points){
@@ -254,53 +259,18 @@ public class StatisticsTrackFragment extends Fragment {
                     .zoom(16)
                     .build();
             MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
-            //mBaiduMap.setMapStatus(mMapStatusUpdate);
             if (mBaiduMap != null) {
                 mBaiduMap.animateMapStatus(mMapStatusUpdate);
             }
-
-
-            /*MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(point, 16);
-            mBaiduMap.animateMapStatus(u);*/
         }catch (NullPointerException e){
             e.printStackTrace();
         }
     }
-    public void addTrack(JSONArray jsonArray){
-
-        double myLat = 0.0, myLng = 0.0;
-        List<LatLng> points = new ArrayList<LatLng>();
-        LatLng start = null, end = null;
-        CoordinateConverter converter = new CoordinateConverter();
-        converter.from(CoordinateConverter.CoordType.GPS);
-        if (jsonArray.length() == 0){
-            return;
-        }
-
-        for (int i = 0; i < jsonArray.length(); i++){
-            try {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                LatLng srcLatLng = new LatLng(jsonObject.getDouble("latitude"),
-                        jsonObject.getDouble("longitude"));
-                converter.coord(srcLatLng);
-                LatLng point = converter.convert();
-                points.add(point);
-                if (i == 0){
-                    start = point;
-                }else if (i == jsonArray.length() -1){
-                    end = point;
-                }
-                myLat += point.latitude;
-                myLng += point.longitude;
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        drawStart(start, R.drawable.icon_marka);
-        drawStart(end, R.drawable.icon_markb);
-        drawLine(points);
-        LatLng avePoint = new LatLng(myLat / jsonArray.length(), myLng / jsonArray.length());
-        adjustScreen(avePoint);
+    public void addTrack(){
+        drawPoint(mapUtils.getBaiduMapPoint(MapUtils.BAIDU_MAP_FIST_POINT), R.drawable.icon_marka);
+        drawPoint(mapUtils.getBaiduMapPoint(MapUtils.BAIDU_MAP_LAST_POINT), R.drawable.icon_markb);
+        drawLine(mapUtils.getBaiduMapPoints());
+        adjustScreen(mapUtils.getBaiduMapPoint(MapUtils.BAIDU_MAP_AVG_POINT));
     }
 
     @Override

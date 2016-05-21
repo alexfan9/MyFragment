@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingTop="0dip" android:layout_gravity="top">
+    <TextView
+        android:id="@+id/itemIndex"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="公里"
+        android:background = "#00FFFF"
+        android:textColor="#33CC33" />
+    <TextView
+        android:id="@+id/itemPace"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="配速"
+        android:background = "#00FF00"
+        android:layout_marginLeft="10dp"/>
+    <TextView
+        android:id="@+id/itemCost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="累计用时"
+        android:layout_marginLeft="10dp"/>
+
+</LinearLayout>
+

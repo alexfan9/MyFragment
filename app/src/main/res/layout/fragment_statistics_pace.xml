@@ -3,8 +3,35 @@
     android:layout_height="match_parent"
     tools:context="com.skyuma.myfragment.StatisticsPaceFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:text="@string/hello_blank_fragment" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#64a3c78a"
+        android:padding="2dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txtStaisticsAvgPace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="平均配速"
+            android:layout_weight="1"/>
+        <TextView
+            android:id="@+id/txtStaisticsFastPace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="最快配速"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/pace_item_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="#b5b5b5"
+        android:dividerHeight="1dp"
+        android:listSelector="@drawable/list_selector" />
 
 </FrameLayout>

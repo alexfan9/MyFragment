@@ -12,7 +12,7 @@ public class StatisticsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         if (savedInstanceState == null){
-            getFragmentManager().beginTransaction().add(R.id.menuContainer, StatisticsMenu.newInstance(bundle)).commit();
+            getFragmentManager().beginTransaction().add(R.id.menuContainer, StatisticsMenu.newInstance(getApplicationContext(), bundle)).commit();
         }
     }
 }

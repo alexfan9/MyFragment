@@ -3,6 +3,7 @@ package com.skyuma.myfragment;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -16,13 +17,15 @@ import android.widget.Button;
 public class StatisticsMenu extends Fragment {
     Fragment frag;
     FragmentTransaction fragmentTransaction;
+    Context context;
     Bundle bundle;
 
     public StatisticsMenu() {
     }
 
-    public static StatisticsMenu newInstance(Bundle bundle) {
+    public static StatisticsMenu newInstance(Context context, Bundle bundle) {
         StatisticsMenu fragment = new StatisticsMenu();
+        fragment.context = context;
         fragment.bundle = bundle;
         return fragment;
     }
@@ -31,7 +34,7 @@ public class StatisticsMenu extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.statistics_menu, container, false);
-        frag = StatisticsTrackFragment.newInstance(bundle);
+        frag = StatisticsTrackFragment.newInstance(context, bundle);
         fragmentTransaction = getFragmentManager().beginTransaction().add(R.id.container, frag);
         fragmentTransaction.commit();
 
@@ -43,7 +46,7 @@ public class StatisticsMenu extends Fragment {
         buttonTrack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                frag = StatisticsTrackFragment.newInstance(bundle);
+                frag = StatisticsTrackFragment.newInstance(context, bundle);
                 fragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.container, frag);
                 fragmentTransaction.commit();
             }
@@ -51,7 +54,7 @@ public class StatisticsMenu extends Fragment {
         buttonPace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                frag = new StatisticsPaceFragment();
+                frag = StatisticsPaceFragment.newInstance(context, bundle);
                 fragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.container, frag);
                 fragmentTransaction.commit();
             }
