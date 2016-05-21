@@ -1,6 +1,7 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.skyuma.myfragment.StatisticsPaceFragment">
 
     <LinearLayout
@@ -14,24 +15,34 @@
             android:id="@+id/txtStaisticsAvgPace"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="平均配速"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:gravity="left"
+            android:text="距离"
             android:layout_weight="1"/>
         <TextView
-            android:id="@+id/txtStaisticsFastPace"
+            android:id="@+id/txtStaisticsPace"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="最快配速"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:gravity="left"
+            android:text="配速"
+            android:layout_weight="3"/>
+        <TextView
+            android:id="@+id/txtStaisticsCost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:gravity="right"
+            android:text="耗时"
             android:layout_weight="1"/>
     </LinearLayout>
 
     <ListView
         android:id="@+id/pace_item_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:divider="#b5b5b5"
         android:dividerHeight="1dp"
         android:listSelector="@drawable/list_selector" />
 
-</FrameLayout>
+</LinearLayout>

@@ -9,20 +9,29 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="公里"
+        android:gravity="center"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_weight="1"
         android:background = "#00FFFF"
         android:textColor="#33CC33" />
     <TextView
         android:id="@+id/itemPace"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_weight="3"
         android:text="配速"
+        android:gravity="left"
         android:background = "#00FF00"
         android:layout_marginLeft="10dp"/>
     <TextView
         android:id="@+id/itemCost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="累计用时"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_weight="1"
+        android:text="耗时"
+        android:gravity="right"
         android:layout_marginLeft="10dp"/>
 
 </LinearLayout>

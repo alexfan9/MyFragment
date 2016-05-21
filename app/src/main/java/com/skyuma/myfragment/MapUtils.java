@@ -208,7 +208,7 @@ public class MapUtils {
         return paceItems;
     }
 
-    public static class PaceItem{
+    public class PaceItem{
         public int index;
         public LatLng point;
         public long period;

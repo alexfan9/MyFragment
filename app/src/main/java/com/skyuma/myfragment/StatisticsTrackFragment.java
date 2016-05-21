@@ -3,7 +3,6 @@ package com.skyuma.myfragment;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,10 +22,6 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
@@ -100,53 +95,7 @@ public class StatisticsTrackFragment extends Fragment {
         }
 
     }
-    public void paceStatistics(JSONArray jsonArray){
-        double distance = 0;
-        int index = 1;
-        JSONObject lastObject = null;
-        JSONObject startObject = null;
-        JSONObject endObject = null;
-        JSONObject tempObject = null;
-        int len = jsonArray.length();
 
-        try {
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                if (i > 0) {
-                    distance += getDistance(lastObject.getDouble("latitude"),
-                            lastObject.getDouble("longitude"),
-                            jsonObject.getDouble("latitude"),
-                            jsonObject.getDouble("longitude"));
-                }
-                if (i == 0){
-                    startObject = jsonObject;
-                }
-                if (distance > index * 1000) {
-                    endObject = jsonObject;
-                    long period = (endObject.getLong("date") - startObject.getLong("date")) / 1000;
-
-                    LatLng srcLatLng = new LatLng(jsonObject.getDouble("latitude"),
-                            jsonObject.getDouble("longitude"));
-                    drawPaceItem(srcLatLng, index, period);
-                    startObject = jsonObject;
-                    index++;
-                }
-                lastObject = jsonObject;
-                if (i == len -1){
-                    endObject = jsonObject;
-                    long period = (endObject.getLong("date") - startObject.getLong("date")) / 1000;
-                    LatLng srcLatLng = new LatLng(jsonObject.getDouble("latitude"),
-                            jsonObject.getDouble("longitude"));
-                    double l_distance = distance - (index -1 ) * 1000;
-
-                    long tmp = (long)(period * 1000 / l_distance);
-                    drawPaceItem(srcLatLng, index, tmp);
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
     private double meter2km(int meters){
         return Math.round(meters/100d)/10d;
@@ -205,32 +154,6 @@ public class StatisticsTrackFragment extends Fragment {
 
         TextView txtCalory = (TextView) rootView.findViewById(R.id.txtCalory);
         txtCalory.setText(getCaloryString(distance));
-    }
-
-    public double getDistance(double lat1, double lon1, double lat2, double lon2){
-        float[] results = new float[1];
-        Location.distanceBetween(lat1, lon1, lat2, lon2, results);
-        return  results[0];
-    }
-
-    public double getTotalDistance(JSONArray jsonArray){
-        double distance = 0;
-        JSONObject lastObject = null;
-        try {
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                if (i > 0) {
-                    distance += getDistance(lastObject.getDouble("latitude"),
-                            lastObject.getDouble("longitude"),
-                            jsonObject.getDouble("latitude"),
-                            jsonObject.getDouble("longitude"));
-                }
-                lastObject = jsonObject;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return distance;
     }
 
     public void drawPoint(LatLng point, int resId){
