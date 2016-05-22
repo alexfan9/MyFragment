@@ -150,7 +150,7 @@ public class HomeFragment extends Fragment{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 GPSActivity gpsActivity = gpsActivities.get(position);
                 //Intent intent = new Intent(getActivity(), DetailMapActivity.class);
-                Intent intent = new Intent(getActivity(), StatisticsActivity.class);
+                Intent intent = new Intent(getActivity(), TestToolBarActivity.class);
                 intent.putExtra("name", gpsActivity.getName());
                 intent.putExtra("datetime", gpsActivity.get_datetime());
                 intent.putExtra("timezone", gpsActivity.get_timezone());

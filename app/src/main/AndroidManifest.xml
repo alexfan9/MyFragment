@@ -150,6 +150,8 @@
             android:label="@string/title_activity_statistics"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
+        <activity android:name=".TestToolBarActivity" >
+        </activity>
     </application>
 
 </manifest>
